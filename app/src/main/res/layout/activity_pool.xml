@@ -62,7 +62,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="IGI Airport"
                 android:textColor="@color/rh_text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -71,7 +70,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="Ride matching is coming next. For now this screen only confirms your destination."
                 android:textColor="@color/rh_text_secondary"
                 android:textSize="13sp" />
         </LinearLayout>

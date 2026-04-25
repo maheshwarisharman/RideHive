@@ -1,8 +1,11 @@
 package com.example.ridehive.ui.pool;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +27,7 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class FindingPoolActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -31,11 +35,28 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
     public static final String EXTRA_LUGGAGE_COUNT = "extra_luggage_count";
     public static final String EXTRA_DEST_LAT = "extra_dest_lat";
     public static final String EXTRA_DEST_LNG = "extra_dest_lng";
+    public static final String EXTRA_REQUEST_ID = "extra_request_id";
 
     private GoogleMap googleMap;
     private Marker destinationMarker;
     private LatLng pendingLatLng;
     private String pendingLabel;
+
+    private PoolsAdapter poolsAdapter;
+    private int requestId;
+    private int luggageCount;
+    private ProgressBar progressBar;
+    private TextView percentView;
+    private TextView matchedCountView;
+    private TextView waitTimeView;
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private final Runnable refreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            loadPools();
+            refreshHandler.postDelayed(this, 8000);
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -45,16 +66,20 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
         ImageView back = findViewById(R.id.iv_back);
         ImageView more = findViewById(R.id.iv_more);
         TextView destination = findViewById(R.id.tv_destination_value);
-        TextView matchedCount = findViewById(R.id.tv_matched_count);
+        matchedCountView = findViewById(R.id.tv_matched_count);
+        progressBar = findViewById(R.id.progress);
+        percentView = findViewById(R.id.tv_percent);
+        waitTimeView = findViewById(R.id.tv_wait_time);
         RecyclerView list = findViewById(R.id.rv_matched_partners);
         MaterialButton cancel = findViewById(R.id.btn_cancel_matching);
         ImageView zoomIn = findViewById(R.id.btn_zoom_in);
         ImageView zoomOut = findViewById(R.id.btn_zoom_out);
 
         String dest = getIntent() != null ? getIntent().getStringExtra(EXTRA_DESTINATION) : "";
-        int luggage = getIntent() != null ? getIntent().getIntExtra(EXTRA_LUGGAGE_COUNT, 0) : 0;
+        luggageCount = getIntent() != null ? getIntent().getIntExtra(EXTRA_LUGGAGE_COUNT, 0) : 0;
         double lat = getIntent() != null ? getIntent().getDoubleExtra(EXTRA_DEST_LAT, Double.NaN) : Double.NaN;
         double lng = getIntent() != null ? getIntent().getDoubleExtra(EXTRA_DEST_LNG, Double.NaN) : Double.NaN;
+        requestId = getIntent() != null ? getIntent().getIntExtra(EXTRA_REQUEST_ID, 0) : 0;
 
         destination.setText(dest == null ? "" : dest);
 
@@ -68,11 +93,17 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
             mapFragment.getMapAsync(this);
         }
 
-        List<MatchedPartner> partners = mockPartners();
-        matchedCount.setText(partners.size() + " Matched");
-
         list.setLayoutManager(new LinearLayoutManager(this));
-        list.setAdapter(new MatchedPartnersAdapter(partners));
+        poolsAdapter = new PoolsAdapter(new PoolsAdapter.Listener() {
+            @Override
+            public void onJoinClicked(int poolId) {
+                joinPool(poolId);
+            }
+        });
+        list.setAdapter(poolsAdapter);
+        matchedCountView.setText("Loading...");
+        updateMatchingProgress(0);
+        loadPools();
 
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,11 +138,19 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
             }
         });
 
-        // For now we just keep luggage count available for future capacity logic.
-        // Cab capacity: 4 people, 3 suitcases (not implemented yet).
-        if (luggage < 0) {
-            // no-op safety
-        }
+        // Cab capacity: 4 people, 3 suitcases (enforced server-side later).
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        refreshHandler.postDelayed(refreshRunnable, 8000);
+    }
+
+    @Override
+    protected void onStop() {
+        refreshHandler.removeCallbacks(refreshRunnable);
+        super.onStop();
     }
 
     @Override
@@ -139,12 +178,86 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.5f));
     }
 
-    @NonNull
-    private static List<MatchedPartner> mockPartners() {
-        List<MatchedPartner> list = new ArrayList<>();
-        list.add(new MatchedPartner("Aditi", 4.9f, 82, R.drawable.ic_avatar_2));
-        list.add(new MatchedPartner("Arush", 4.7f, 15, R.drawable.ic_avatar_1));
-        return list;
+    private void loadPools() {
+        com.example.ridehive.network.ApiClient.api(this)
+                .pools()
+                .enqueue(new retrofit2.Callback<java.util.List<com.example.ridehive.network.models.PoolSummary>>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<java.util.List<com.example.ridehive.network.models.PoolSummary>> call,
+                                           retrofit2.Response<java.util.List<com.example.ridehive.network.models.PoolSummary>> response) {
+                        if (!response.isSuccessful() || response.body() == null) {
+                            matchedCountView.setText("Failed");
+                            android.widget.Toast.makeText(FindingPoolActivity.this,
+                                    com.example.ridehive.util.UiUtil.errorMessage(response),
+                                    android.widget.Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        java.util.List<com.example.ridehive.network.models.PoolSummary> pools = response.body();
+                        poolsAdapter.setItems(pools);
+                        matchedCountView.setText(pools.size() + " Available");
+                        updateMatchingProgress(pools);
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<java.util.List<com.example.ridehive.network.models.PoolSummary>> call, Throwable t) {
+                        matchedCountView.setText("Failed");
+                        updateMatchingProgress(0);
+                        android.widget.Toast.makeText(FindingPoolActivity.this,
+                                com.example.ridehive.util.UiUtil.errorMessage(t),
+                                android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void updateMatchingProgress(@NonNull List<com.example.ridehive.network.models.PoolSummary> pools) {
+        int totalMatchedUsers = 0;
+        for (com.example.ridehive.network.models.PoolSummary pool : pools) {
+            totalMatchedUsers += Math.max(pool.total_members, 0);
+        }
+        updateMatchingProgress(totalMatchedUsers);
+    }
+
+    private void updateMatchingProgress(int matchedUsers) {
+        int clampedUsers = Math.max(matchedUsers, 0);
+        int percent = Math.min(100, clampedUsers * 25);
+        progressBar.setProgress(percent);
+        percentView.setText(String.format(Locale.getDefault(), "%d%%", percent));
+
+        int estimatedMinutes = Math.max(1, 8 - (percent / 15));
+        if (percent >= 100) {
+            waitTimeView.setText("Matched. Finalizing pool...");
+        } else {
+            waitTimeView.setText(String.format(Locale.getDefault(), "Estimated wait time: ~%d mins", estimatedMinutes));
+        }
+    }
+
+    private void joinPool(int poolId) {
+        if (requestId <= 0) {
+            android.widget.Toast.makeText(this, "Missing request id. Try again.", android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        com.example.ridehive.network.ApiClient.api(this)
+                .joinPool(new com.example.ridehive.network.models.JoinPoolRequest(poolId, requestId, luggageCount))
+                .enqueue(new retrofit2.Callback<com.example.ridehive.network.models.MessageResponse>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<com.example.ridehive.network.models.MessageResponse> call,
+                                           retrofit2.Response<com.example.ridehive.network.models.MessageResponse> response) {
+                        if (!response.isSuccessful()) {
+                            android.widget.Toast.makeText(FindingPoolActivity.this,
+                                    com.example.ridehive.util.UiUtil.errorMessage(response),
+                                    android.widget.Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        android.widget.Toast.makeText(FindingPoolActivity.this, "Joined pool", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<com.example.ridehive.network.models.MessageResponse> call, Throwable t) {
+                        android.widget.Toast.makeText(FindingPoolActivity.this,
+                                com.example.ridehive.util.UiUtil.errorMessage(t),
+                                android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
 

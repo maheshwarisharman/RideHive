@@ -166,6 +166,24 @@
                 app:iconTint="@color/rh_on_primary"
                 app:backgroundTint="@color/rh_primary" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_schedule_later"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:text="Schedule for later"
+                android:textAllCaps="false"
+                android:textColor="@color/rh_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_calendar"
+                app:iconPadding="10dp"
+                app:iconTint="@color/rh_text_primary"
+                app:strokeColor="@color/rh_divider"
+                app:strokeWidth="1dp"
+                app:backgroundTint="@color/rh_card_bg" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

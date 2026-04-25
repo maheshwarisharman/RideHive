@@ -19,8 +19,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ridehive.R;
+import com.example.ridehive.network.ApiClient;
+import com.example.ridehive.network.models.PoolSummary;
+import com.example.ridehive.network.models.CreateLocationRequest;
+import com.example.ridehive.network.models.CreateLocationResponse;
+import com.example.ridehive.network.models.CreateRideRequestRequest;
+import com.example.ridehive.network.models.CreateRideRequestResponse;
 import com.example.ridehive.ui.pool.LuggageActivity;
 import com.example.ridehive.ui.pool.FindingPoolActivity;
+import com.example.ridehive.ui.pool.ScheduleRideActivity;
+import com.example.ridehive.util.UiUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -40,6 +48,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private EditText destinationEditText;
@@ -49,6 +61,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String pendingDestinationLabel;
     private LatLng selectedDestinationLatLng;
     private String selectedDestinationLabel;
+    private String selectedDestinationAddress;
+    private NearbyRidersAdapter nearbyRidersAdapter;
 
     private final ActivityResultLauncher<Intent> luggageLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -62,12 +76,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                             double lng = result.getData().getDoubleExtra(LuggageActivity.RESULT_DEST_LNG, Double.NaN);
                             if (TextUtils.isEmpty(dest)) return;
 
-                            Intent intent = new Intent(HomeActivity.this, FindingPoolActivity.class);
-                            intent.putExtra(FindingPoolActivity.EXTRA_DESTINATION, dest);
-                            intent.putExtra(FindingPoolActivity.EXTRA_LUGGAGE_COUNT, luggage);
-                            intent.putExtra(FindingPoolActivity.EXTRA_DEST_LAT, lat);
-                            intent.putExtra(FindingPoolActivity.EXTRA_DEST_LNG, lng);
-                            startActivity(intent);
+                            createRideNowRequest(dest, selectedDestinationAddress, lat, lng, luggage);
                         }
                     });
 
@@ -94,6 +103,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         destinationEditText = findViewById(R.id.et_destination);
         MaterialButton poolNowButton = findViewById(R.id.btn_pool_now);
+        MaterialButton scheduleLaterButton = findViewById(R.id.btn_schedule_later);
         RecyclerView ridersRecyclerView = findViewById(R.id.rv_nearby_riders);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         ImageView zoomIn = findViewById(R.id.btn_zoom_in);
@@ -105,12 +115,14 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         ridersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ridersRecyclerView.setAdapter(new NearbyRidersAdapter(mockNearbyRiders(), new NearbyRidersAdapter.Listener() {
+        nearbyRidersAdapter = new NearbyRidersAdapter(new ArrayList<>(), new NearbyRidersAdapter.Listener() {
             @Override
             public void onJoinClicked(@NonNull NearbyRider rider) {
                 startLuggageFlow(rider.getDestination());
             }
-        }));
+        });
+        ridersRecyclerView.setAdapter(nearbyRidersAdapter);
+        loadNearbyPools();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
         if (mapFragment != null) {
@@ -145,7 +157,25 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Toast.makeText(HomeActivity.this, "Enter your destination to start pooling", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                startLuggageFlow(dest);
+                startLuggageFlow(dest, selectedDestinationLatLng);
+            }
+        });
+
+        scheduleLaterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String dest = destinationEditText.getText() == null ? "" : destinationEditText.getText().toString().trim();
+                if (TextUtils.isEmpty(dest)) {
+                    Toast.makeText(HomeActivity.this, "Select a destination to schedule a ride", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Intent intent = new Intent(HomeActivity.this, ScheduleRideActivity.class);
+                intent.putExtra(ScheduleRideActivity.EXTRA_DESTINATION, dest);
+                if (selectedDestinationLatLng != null) {
+                    intent.putExtra(ScheduleRideActivity.EXTRA_DEST_LAT, selectedDestinationLatLng.latitude);
+                    intent.putExtra(ScheduleRideActivity.EXTRA_DEST_LNG, selectedDestinationLatLng.longitude);
+                }
+                startActivity(intent);
             }
         });
 
@@ -160,6 +190,12 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return true;
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadNearbyPools();
     }
 
     @Override
@@ -196,7 +232,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void onPlaceSelected(@NonNull Place place) {
         String label = place.getName();
-        if (TextUtils.isEmpty(label)) label = place.getAddress();
+        String address = place.getAddress();
+        if (TextUtils.isEmpty(label)) label = address;
         if (!TextUtils.isEmpty(label)) {
             destinationEditText.setText(label);
         }
@@ -213,11 +250,9 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         selectedDestinationLatLng = latLng;
         selectedDestinationLabel = label;
+        selectedDestinationAddress = address;
 
-        // After destination is selected, ask luggage count (0-3).
-        if (!TextUtils.isEmpty(label)) {
-            startLuggageFlow(label, latLng);
-        }
+        // UX change: do not auto-navigate after selecting destination.
     }
 
     private void showDestinationOnMap(@NonNull LatLng latLng, String label) {
@@ -241,12 +276,86 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         luggageLauncher.launch(intent);
     }
 
-    @NonNull
-    private static List<NearbyRider> mockNearbyRiders() {
-        List<NearbyRider> riders = new ArrayList<>();
-        riders.add(new NearbyRider("Rahul Mathur", "Going to IGI Airport"));
-        riders.add(new NearbyRider("Arush", "Going to Rewari railway station"));
-        return riders;
+    private void createRideNowRequest(
+            @NonNull String placeName,
+            String address,
+            double lat,
+            double lng,
+            int luggageCount
+    ) {
+        if (Double.isNaN(lat) || Double.isNaN(lng)) {
+            Toast.makeText(this, "Please select a destination from search", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String safeAddress = TextUtils.isEmpty(address) ? placeName : address;
+
+        ApiClient.api(this)
+                .createLocation(new CreateLocationRequest(placeName, safeAddress, lat, lng))
+                .enqueue(new Callback<CreateLocationResponse>() {
+                    @Override
+                    public void onResponse(Call<CreateLocationResponse> call, Response<CreateLocationResponse> response) {
+                        if (!response.isSuccessful() || response.body() == null) {
+                            Toast.makeText(HomeActivity.this, UiUtil.errorMessage(response), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        int locationId = response.body().location_id;
+                        ApiClient.api(HomeActivity.this)
+                                .createRideRequest(new CreateRideRequestRequest(locationId, "NOW", luggageCount))
+                                .enqueue(new Callback<CreateRideRequestResponse>() {
+                                    @Override
+                                    public void onResponse(Call<CreateRideRequestResponse> call, Response<CreateRideRequestResponse> response) {
+                                        if (!response.isSuccessful() || response.body() == null) {
+                                            Toast.makeText(HomeActivity.this, UiUtil.errorMessage(response), Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+
+                                        Intent intent = new Intent(HomeActivity.this, FindingPoolActivity.class);
+                                        intent.putExtra(FindingPoolActivity.EXTRA_DESTINATION, placeName);
+                                        intent.putExtra(FindingPoolActivity.EXTRA_LUGGAGE_COUNT, luggageCount);
+                                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LAT, lat);
+                                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LNG, lng);
+                                        intent.putExtra(FindingPoolActivity.EXTRA_REQUEST_ID, response.body().request_id);
+                                        startActivity(intent);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<CreateRideRequestResponse> call, Throwable t) {
+                                        Toast.makeText(HomeActivity.this, UiUtil.errorMessage(t), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onFailure(Call<CreateLocationResponse> call, Throwable t) {
+                        Toast.makeText(HomeActivity.this, UiUtil.errorMessage(t), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void loadNearbyPools() {
+        ApiClient.api(this).pools().enqueue(new Callback<List<PoolSummary>>() {
+            @Override
+            public void onResponse(Call<List<PoolSummary>> call, Response<List<PoolSummary>> response) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    Toast.makeText(HomeActivity.this, UiUtil.errorMessage(response), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                List<NearbyRider> mapped = new ArrayList<>();
+                for (PoolSummary p : response.body()) {
+                    String title = "Pool #" + p.pool_id;
+                    String subtitle = p.place_name + " • Seats " + p.remaining_seats + " • Bags " + p.remaining_suitcases;
+                    mapped.add(new NearbyRider(p.pool_id, title, subtitle));
+                }
+                nearbyRidersAdapter.setItems(mapped);
+            }
+
+            @Override
+            public void onFailure(Call<List<PoolSummary>> call, Throwable t) {
+                Toast.makeText(HomeActivity.this, UiUtil.errorMessage(t), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
 

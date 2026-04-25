@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ridehive.R;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NearbyRidersAdapter extends RecyclerView.Adapter<NearbyRidersAdapter.VH> {
@@ -20,12 +21,18 @@ public class NearbyRidersAdapter extends RecyclerView.Adapter<NearbyRidersAdapte
         void onJoinClicked(@NonNull NearbyRider rider);
     }
 
-    @NonNull private final List<NearbyRider> items;
+    @NonNull private final List<NearbyRider> items = new ArrayList<>();
     @NonNull private final Listener listener;
 
     public NearbyRidersAdapter(@NonNull List<NearbyRider> items, @NonNull Listener listener) {
-        this.items = items;
+        this.items.addAll(items);
         this.listener = listener;
+    }
+
+    public void setItems(@NonNull List<NearbyRider> riders) {
+        items.clear();
+        items.addAll(riders);
+        notifyDataSetChanged();
     }
 
     @NonNull

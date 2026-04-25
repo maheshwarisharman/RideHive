@@ -62,7 +62,7 @@
         android:id="@+id/tv_percent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="65%"
+        android:text="0%"
         android:textColor="#FFC59C13"
         android:textSize="15sp"
         android:textStyle="bold"
@@ -77,7 +77,7 @@
         android:layout_marginTop="10dp"
         android:indeterminate="false"
         android:max="100"
-        android:progress="65"
+        android:progress="0"
         android:progressTint="@color/rh_primary"
         android:progressBackgroundTint="#FFD9E0E7"
         app:layout_constraintEnd_toEndOf="parent"
@@ -102,10 +102,11 @@
             app:tint="@color/rh_text_secondary" />
 
         <TextView
+            android:id="@+id/tv_wait_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Estimated wait time: ~4 mins"
+            android:text="Estimated wait time: --"
             android:textColor="@color/rh_text_secondary"
             android:textSize="13sp" />
     </LinearLayout>
@@ -201,7 +202,6 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="IGI Airport"
                         android:textColor="@color/rh_text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold"
@@ -226,7 +226,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="10:45 AM"
+                        android:text="--"
                         android:textColor="@color/rh_text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold"
@@ -266,7 +266,7 @@
             android:paddingTop="4dp"
             android:paddingEnd="10dp"
             android:paddingBottom="4dp"
-            android:text="2 Matched"
+            android:text="0 Available"
             android:textColor="@color/rh_text_primary"
             android:textSize="12sp"
             android:textStyle="bold" />
