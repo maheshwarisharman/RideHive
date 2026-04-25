@@ -1,5 +1,6 @@
 package com.example.ridehive.ui.pool;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,6 +17,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ridehive.R;
+import com.example.ridehive.network.ApiClient;
+import com.example.ridehive.network.models.CancelRideRequest;
+import com.example.ridehive.network.models.MessageResponse;
+import com.example.ridehive.ui.home.HomeActivity;
+import com.example.ridehive.util.UiUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -120,8 +126,7 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(FindingPoolActivity.this, "Matching cancelled", Toast.LENGTH_SHORT).show();
-                finish();
+                performCancelMatching();
             }
         });
 
@@ -258,6 +263,50 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
                                 android.widget.Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void performCancelMatching() {
+        if (requestId <= 0) {
+            resetPoolUiState();
+            navigateHome();
+            return;
+        }
+        ApiClient.api(this)
+                .cancelRide(new CancelRideRequest(requestId))
+                .enqueue(new retrofit2.Callback<MessageResponse>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<MessageResponse> call,
+                                           retrofit2.Response<MessageResponse> response) {
+                        if (!response.isSuccessful()) {
+                            Toast.makeText(FindingPoolActivity.this, UiUtil.errorMessage(response), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        resetPoolUiState();
+                        navigateHome();
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<MessageResponse> call, Throwable t) {
+                        Toast.makeText(FindingPoolActivity.this, UiUtil.errorMessage(t), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void resetPoolUiState() {
+        refreshHandler.removeCallbacks(refreshRunnable);
+        if (poolsAdapter != null) poolsAdapter.clear();
+        if (progressBar != null) progressBar.setProgress(0);
+        if (percentView != null) percentView.setText("0%");
+        if (matchedCountView != null) matchedCountView.setText("0 Available");
+        if (waitTimeView != null) waitTimeView.setText("Matching stopped");
+    }
+
+    private void navigateHome() {
+        Toast.makeText(this, "Matching cancelled", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
     }
 }
 

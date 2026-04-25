@@ -6,6 +6,7 @@ import com.example.ridehive.network.models.CreatePoolRequest;
 import com.example.ridehive.network.models.CreatePoolResponse;
 import com.example.ridehive.network.models.CreateRideRequestRequest;
 import com.example.ridehive.network.models.CreateRideRequestResponse;
+import com.example.ridehive.network.models.CancelRideRequest;
 import com.example.ridehive.network.models.JoinPoolRequest;
 import com.example.ridehive.network.models.MessageResponse;
 import com.example.ridehive.network.models.PoolSummary;
@@ -45,6 +46,9 @@ public interface RideHiveApi {
 
     @POST("ride/schedule")
     Call<MessageResponse> scheduleRide(@Body ScheduleRideRequest body);
+
+    @POST("ride/cancel")
+    Call<MessageResponse> cancelRide(@Body CancelRideRequest body);
 
     @GET("pools")
     Call<List<PoolSummary>> pools();

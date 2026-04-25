@@ -283,15 +283,19 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
             double lng,
             int luggageCount
     ) {
+        // Join-from-home flow may not have exact coordinates from Places.
+        // Fallback to campus coordinates so request creation can proceed.
         if (Double.isNaN(lat) || Double.isNaN(lng)) {
-            Toast.makeText(this, "Please select a destination from search", Toast.LENGTH_SHORT).show();
-            return;
+            lat = 28.2469;
+            lng = 76.8142;
         }
+        final double finalLat = lat;
+        final double finalLng = lng;
 
         String safeAddress = TextUtils.isEmpty(address) ? placeName : address;
 
         ApiClient.api(this)
-                .createLocation(new CreateLocationRequest(placeName, safeAddress, lat, lng))
+                .createLocation(new CreateLocationRequest(placeName, safeAddress, finalLat, finalLng))
                 .enqueue(new Callback<CreateLocationResponse>() {
                     @Override
                     public void onResponse(Call<CreateLocationResponse> call, Response<CreateLocationResponse> response) {
@@ -314,8 +318,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         Intent intent = new Intent(HomeActivity.this, FindingPoolActivity.class);
                                         intent.putExtra(FindingPoolActivity.EXTRA_DESTINATION, placeName);
                                         intent.putExtra(FindingPoolActivity.EXTRA_LUGGAGE_COUNT, luggageCount);
-                                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LAT, lat);
-                                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LNG, lng);
+                                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LAT, finalLat);
+                                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LNG, finalLng);
                                         intent.putExtra(FindingPoolActivity.EXTRA_REQUEST_ID, response.body().request_id);
                                         startActivity(intent);
                                     }

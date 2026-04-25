@@ -34,6 +34,11 @@ public class PoolsAdapter extends RecyclerView.Adapter<PoolsAdapter.VH> {
         notifyDataSetChanged();
     }
 
+    public void clear() {
+        items.clear();
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
