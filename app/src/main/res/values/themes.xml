@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.RideHive" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/rh_primary</item>
+        <item name="colorPrimaryVariant">@color/rh_primary_variant</item>
+        <item name="colorOnPrimary">@color/rh_on_primary</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/rh_accent</item>
+        <item name="colorSecondaryVariant">@color/rh_accent_variant</item>
+        <item name="colorOnSecondary">@color/rh_on_accent</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/rh_screen_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <!-- Customize your theme here. -->
+    </style>
+</resources>

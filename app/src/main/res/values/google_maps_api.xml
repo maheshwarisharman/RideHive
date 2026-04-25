@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Replace with your Google Maps/Places API key -->
+    <string name="google_maps_key">AIzaSyCgH_l9GVk7jIXCIGv6VTS513apD0s__P4</string>
+</resources>
+
