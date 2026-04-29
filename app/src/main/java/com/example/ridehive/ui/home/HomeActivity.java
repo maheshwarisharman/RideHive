@@ -20,14 +20,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ridehive.R;
 import com.example.ridehive.network.ApiClient;
-import com.example.ridehive.network.models.PoolSummary;
 import com.example.ridehive.network.models.CreateLocationRequest;
 import com.example.ridehive.network.models.CreateLocationResponse;
 import com.example.ridehive.network.models.CreateRideRequestRequest;
 import com.example.ridehive.network.models.CreateRideRequestResponse;
+import com.example.ridehive.network.models.SearchingRide;
 import com.example.ridehive.ui.pool.LuggageActivity;
 import com.example.ridehive.ui.pool.FindingPoolActivity;
 import com.example.ridehive.ui.pool.ScheduleRideActivity;
+import com.example.ridehive.ui.rides.MyRidesActivity;
 import com.example.ridehive.util.UiUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -122,7 +123,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
         ridersRecyclerView.setAdapter(nearbyRidersAdapter);
-        loadNearbyPools();
+        loadNearbySearchingRides();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
         if (mapFragment != null) {
@@ -186,6 +187,10 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (item.getItemId() == R.id.nav_home) {
                     return true;
                 }
+                if (item.getItemId() == R.id.nav_rides) {
+                    startActivity(new Intent(HomeActivity.this, MyRidesActivity.class));
+                    return true;
+                }
                 Toast.makeText(HomeActivity.this, "Coming soon", Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -195,7 +200,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
-        loadNearbyPools();
+        loadNearbySearchingRides();
     }
 
     @Override
@@ -338,25 +343,26 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
     }
 
-    private void loadNearbyPools() {
-        ApiClient.api(this).pools().enqueue(new Callback<List<PoolSummary>>() {
+    private void loadNearbySearchingRides() {
+        ApiClient.api(this).searchingRides().enqueue(new Callback<List<SearchingRide>>() {
             @Override
-            public void onResponse(Call<List<PoolSummary>> call, Response<List<PoolSummary>> response) {
+            public void onResponse(Call<List<SearchingRide>> call, Response<List<SearchingRide>> response) {
                 if (!response.isSuccessful() || response.body() == null) {
                     Toast.makeText(HomeActivity.this, UiUtil.errorMessage(response), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 List<NearbyRider> mapped = new ArrayList<>();
-                for (PoolSummary p : response.body()) {
-                    String title = "Pool #" + p.pool_id;
-                    String subtitle = p.place_name + " • Seats " + p.remaining_seats + " • Bags " + p.remaining_suitcases;
-                    mapped.add(new NearbyRider(p.pool_id, title, subtitle));
+                for (SearchingRide ride : response.body()) {
+                    String riderName = TextUtils.isEmpty(ride.user_name) ? "Nearby rider" : ride.user_name;
+                    String destination = TextUtils.isEmpty(ride.place_name) ? "Unknown destination" : ride.place_name;
+                    String subtitle = "Going to " + destination;
+                    mapped.add(new NearbyRider(ride.request_id, riderName, subtitle));
                 }
                 nearbyRidersAdapter.setItems(mapped);
             }
 
             @Override
-            public void onFailure(Call<List<PoolSummary>> call, Throwable t) {
+            public void onFailure(Call<List<SearchingRide>> call, Throwable t) {
                 Toast.makeText(HomeActivity.this, UiUtil.errorMessage(t), Toast.LENGTH_SHORT).show();
             }
         });

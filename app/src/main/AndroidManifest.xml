@@ -55,6 +55,14 @@
         <activity
             android:name=".ui.home.HomeActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".ui.rides.MyRidesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.rides.MyRideDetailsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

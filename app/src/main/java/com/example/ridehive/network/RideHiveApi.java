@@ -10,7 +10,10 @@ import com.example.ridehive.network.models.CancelRideRequest;
 import com.example.ridehive.network.models.JoinPoolRequest;
 import com.example.ridehive.network.models.MessageResponse;
 import com.example.ridehive.network.models.PoolSummary;
+import com.example.ridehive.network.models.RidePassenger;
+import com.example.ridehive.network.models.RideRequestItem;
 import com.example.ridehive.network.models.ScheduleRideRequest;
+import com.example.ridehive.network.models.SearchingRide;
 import com.example.ridehive.network.models.SignupRequest;
 import com.example.ridehive.network.models.SignupResponse;
 import com.example.ridehive.network.models.LoginRequest;
@@ -22,6 +25,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.POST;
 
 public interface RideHiveApi {
@@ -51,7 +55,17 @@ public interface RideHiveApi {
     Call<MessageResponse> cancelRide(@Body CancelRideRequest body);
 
     @GET("pools")
+    
     Call<List<PoolSummary>> pools();
+
+    @GET("rides")
+    Call<List<RideRequestItem>> rides();
+
+    @GET("rides/searching")
+    Call<List<SearchingRide>> searchingRides();
+
+    @GET("ride/{request_id}/passengers")
+    Call<List<RidePassenger>> ridePassengers(@Path("request_id") int requestId);
 
     @POST("pool/create")
     Call<CreatePoolResponse> createPool(@Body CreatePoolRequest body);
