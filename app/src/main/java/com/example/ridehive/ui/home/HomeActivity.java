@@ -24,10 +24,12 @@ import com.example.ridehive.network.models.CreateLocationRequest;
 import com.example.ridehive.network.models.CreateLocationResponse;
 import com.example.ridehive.network.models.CreateRideRequestRequest;
 import com.example.ridehive.network.models.CreateRideRequestResponse;
+import com.example.ridehive.network.models.JoinPartnerRideResponse;
 import com.example.ridehive.network.models.SearchingRide;
 import com.example.ridehive.ui.pool.LuggageActivity;
 import com.example.ridehive.ui.pool.FindingPoolActivity;
 import com.example.ridehive.ui.pool.ScheduleRideActivity;
+import com.example.ridehive.ui.profile.ProfileActivity;
 import com.example.ridehive.ui.rides.MyRidesActivity;
 import com.example.ridehive.util.UiUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -64,6 +66,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     private String selectedDestinationLabel;
     private String selectedDestinationAddress;
     private NearbyRidersAdapter nearbyRidersAdapter;
+    private int pendingPartnerRequestId = 0;
 
     private final ActivityResultLauncher<Intent> luggageLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -77,7 +80,19 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                             double lng = result.getData().getDoubleExtra(LuggageActivity.RESULT_DEST_LNG, Double.NaN);
                             if (TextUtils.isEmpty(dest)) return;
 
-                            createRideNowRequest(dest, selectedDestinationAddress, lat, lng, luggage);
+                            final int partnerId = pendingPartnerRequestId;
+                            pendingPartnerRequestId = 0;
+
+                            createRideRequest(dest, selectedDestinationAddress, lat, lng, luggage, new RequestCreatedListener() {
+                                @Override
+                                public void onCreated(int requestId, double finalLat, double finalLng) {
+                                    if (partnerId > 0) {
+                                        joinPartnerRide(partnerId, requestId, dest, finalLat, finalLng, luggage);
+                                    } else {
+                                        openFindingPoolForRequester(requestId, dest, finalLat, finalLng, luggage);
+                                    }
+                                }
+                            });
                         }
                     });
 
@@ -119,7 +134,13 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         nearbyRidersAdapter = new NearbyRidersAdapter(new ArrayList<>(), new NearbyRidersAdapter.Listener() {
             @Override
             public void onJoinClicked(@NonNull NearbyRider rider) {
-                startLuggageFlow(rider.getDestination());
+                String dest = destinationEditText.getText() == null ? "" : destinationEditText.getText().toString().trim();
+                if (TextUtils.isEmpty(dest) || selectedDestinationLatLng == null) {
+                    Toast.makeText(HomeActivity.this, "Select your destination first", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                pendingPartnerRequestId = rider.getPoolId();
+                startLuggageFlow(dest, selectedDestinationLatLng);
             }
         });
         ridersRecyclerView.setAdapter(nearbyRidersAdapter);
@@ -189,6 +210,11 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
                 if (item.getItemId() == R.id.nav_rides) {
                     startActivity(new Intent(HomeActivity.this, MyRidesActivity.class));
+                    return true;
+                }
+                if (item.getItemId() == R.id.nav_profile) {
+                    startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
+                    finish();
                     return true;
                 }
                 Toast.makeText(HomeActivity.this, "Coming soon", Toast.LENGTH_SHORT).show();
@@ -281,12 +307,17 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         luggageLauncher.launch(intent);
     }
 
-    private void createRideNowRequest(
+    private interface RequestCreatedListener {
+        void onCreated(int requestId, double finalLat, double finalLng);
+    }
+
+    private void createRideRequest(
             @NonNull String placeName,
             String address,
             double lat,
             double lng,
             int luggageCount
+            , @NonNull RequestCreatedListener listener
     ) {
         // Join-from-home flow may not have exact coordinates from Places.
         // Fallback to campus coordinates so request creation can proceed.
@@ -320,13 +351,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                                             return;
                                         }
 
-                                        Intent intent = new Intent(HomeActivity.this, FindingPoolActivity.class);
-                                        intent.putExtra(FindingPoolActivity.EXTRA_DESTINATION, placeName);
-                                        intent.putExtra(FindingPoolActivity.EXTRA_LUGGAGE_COUNT, luggageCount);
-                                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LAT, finalLat);
-                                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LNG, finalLng);
-                                        intent.putExtra(FindingPoolActivity.EXTRA_REQUEST_ID, response.body().request_id);
-                                        startActivity(intent);
+                                        listener.onCreated(response.body().request_id, finalLat, finalLng);
                                     }
 
                                     @Override
@@ -355,8 +380,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 for (SearchingRide ride : response.body()) {
                     String riderName = TextUtils.isEmpty(ride.user_name) ? "Nearby rider" : ride.user_name;
                     String destination = TextUtils.isEmpty(ride.place_name) ? "Unknown destination" : ride.place_name;
-                    String subtitle = "Going to " + destination;
-                    mapped.add(new NearbyRider(ride.request_id, riderName, subtitle));
+                    mapped.add(new NearbyRider(ride.request_id, riderName, destination, ride.scheduled_time, Math.max(1, ride.current_members)));
                 }
                 nearbyRidersAdapter.setItems(mapped);
             }
@@ -366,6 +390,48 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Toast.makeText(HomeActivity.this, UiUtil.errorMessage(t), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void openFindingPoolForRequester(int requestId, @NonNull String dest, double lat, double lng, int luggageCount) {
+        Intent intent = new Intent(HomeActivity.this, FindingPoolActivity.class);
+        intent.putExtra(FindingPoolActivity.EXTRA_DESTINATION, dest);
+        intent.putExtra(FindingPoolActivity.EXTRA_LUGGAGE_COUNT, luggageCount);
+        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LAT, lat);
+        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LNG, lng);
+        intent.putExtra(FindingPoolActivity.EXTRA_REQUEST_ID, requestId);
+        startActivity(intent);
+    }
+
+    private void joinPartnerRide(int partnerRequestId, int myRequestId, @NonNull String myDest, double myLat, double myLng, int luggageCount) {
+        ApiClient.api(this)
+                .joinPartnerRide(partnerRequestId)
+                .enqueue(new Callback<JoinPartnerRideResponse>() {
+                    @Override
+                    public void onResponse(Call<JoinPartnerRideResponse> call, Response<JoinPartnerRideResponse> response) {
+                        if (!response.isSuccessful() || response.body() == null) {
+                            Toast.makeText(HomeActivity.this, UiUtil.errorMessage(response), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        int poolId = response.body().pool_id;
+                        if (poolId <= 0) {
+                            Toast.makeText(HomeActivity.this, "Match failed. Try again.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        Intent intent = new Intent(HomeActivity.this, FindingPoolActivity.class);
+                        intent.putExtra(FindingPoolActivity.EXTRA_POOL_ID, poolId);
+                        intent.putExtra(FindingPoolActivity.EXTRA_REQUEST_ID, myRequestId);
+                        intent.putExtra(FindingPoolActivity.EXTRA_DESTINATION, myDest);
+                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LAT, myLat);
+                        intent.putExtra(FindingPoolActivity.EXTRA_DEST_LNG, myLng);
+                        intent.putExtra(FindingPoolActivity.EXTRA_LUGGAGE_COUNT, luggageCount);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onFailure(Call<JoinPartnerRideResponse> call, Throwable t) {
+                        Toast.makeText(HomeActivity.this, UiUtil.errorMessage(t), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
 

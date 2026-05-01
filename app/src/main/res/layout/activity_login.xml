@@ -40,7 +40,11 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Email"
+                app:hintEnabled="false"
+                app:hintTextColor="@color/rh_text_secondary"
+                app:boxStrokeColor="@color/rh_divider"
+                app:boxStrokeWidth="1dp"
+                app:boxStrokeWidthFocused="2dp"
                 app:boxBackgroundMode="outline"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -51,6 +55,9 @@
                     android:id="@+id/et_email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="Email"
+                    android:textColor="@color/rh_text_primary"
+                    android:textColorHint="@color/rh_text_secondary"
                     android:inputType="textEmailAddress" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -58,7 +65,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="Password"
+                app:hintEnabled="false"
+                app:hintTextColor="@color/rh_text_secondary"
+                app:boxStrokeColor="@color/rh_divider"
+                app:boxStrokeWidth="1dp"
+                app:boxStrokeWidthFocused="2dp"
                 app:boxBackgroundMode="outline"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -69,6 +80,9 @@
                     android:id="@+id/et_password"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:hint="Password"
+                    android:textColor="@color/rh_text_primary"
+                    android:textColorHint="@color/rh_text_secondary"
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 

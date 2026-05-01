@@ -8,8 +8,10 @@ import com.example.ridehive.network.models.CreateRideRequestRequest;
 import com.example.ridehive.network.models.CreateRideRequestResponse;
 import com.example.ridehive.network.models.CancelRideRequest;
 import com.example.ridehive.network.models.JoinPoolRequest;
+import com.example.ridehive.network.models.JoinPartnerRideResponse;
 import com.example.ridehive.network.models.MessageResponse;
 import com.example.ridehive.network.models.PoolSummary;
+import com.example.ridehive.network.models.PoolDetails;
 import com.example.ridehive.network.models.RidePassenger;
 import com.example.ridehive.network.models.RideRequestItem;
 import com.example.ridehive.network.models.ScheduleRideRequest;
@@ -55,8 +57,10 @@ public interface RideHiveApi {
     Call<MessageResponse> cancelRide(@Body CancelRideRequest body);
 
     @GET("pools")
-    
     Call<List<PoolSummary>> pools();
+
+    @GET("pool/{pool_id}")
+    Call<PoolDetails> poolDetails(@Path("pool_id") int poolId);
 
     @GET("rides")
     Call<List<RideRequestItem>> rides();
@@ -72,5 +76,11 @@ public interface RideHiveApi {
 
     @POST("pool/join")
     Call<MessageResponse> joinPool(@Body JoinPoolRequest body);
+
+    @POST("ride/{partner_request_id}/join")
+    Call<JoinPartnerRideResponse> joinPartnerRide(@Path("partner_request_id") int partnerRequestId);
+
+    @POST("pool/{pool_id}/start")
+    Call<MessageResponse> startPool(@Path("pool_id") int poolId);
 }
 

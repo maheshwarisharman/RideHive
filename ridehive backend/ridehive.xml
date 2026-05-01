@@ -1,0 +1,415 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="dw3soUYIQWfi0B1dLTeK" name="Page-1">
+    <mxGraphModel dx="1851" dy="908" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="2336" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="E_USERS" parent="1" style="shape=mxgraph.er.entity;fontSize=14;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" value="USERS" vertex="1">
+          <mxGeometry height="60" width="160" x="660" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="A_user_id" parent="1" style="ellipse;fontSize=11;fontStyle=4;fillColor=#e1d5e7;strokeColor=#9673a6;" value="user_id (PK)" vertex="1">
+          <mxGeometry height="40" width="130" x="420" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="L_user_id" edge="1" parent="1" source="A_user_id" style="edgeStyle=none;endArrow=none;" target="E_USERS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_name" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="name" vertex="1">
+          <mxGeometry height="40" width="100" x="240" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="L_name" edge="1" parent="1" source="A_name" style="edgeStyle=none;endArrow=none;" target="A_user_id">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_email" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="email (UK)" vertex="1">
+          <mxGeometry height="40" width="110" x="240" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="L_email" edge="1" parent="1" source="A_email" style="edgeStyle=none;endArrow=none;" target="A_user_id">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_password" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="password_hash" vertex="1">
+          <mxGeometry height="40" width="130" x="640" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="L_password" edge="1" parent="1" source="A_password" style="edgeStyle=none;endArrow=none;" target="E_USERS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_rating" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;dashed=1;" value="rating" vertex="1">
+          <mxGeometry height="40" width="100" x="800" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="L_rating" edge="1" parent="1" source="A_rating" style="edgeStyle=none;endArrow=none;dashed=1;" target="E_USERS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_rides_count" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="rides_count" vertex="1">
+          <mxGeometry height="40" width="120" x="955" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="L_rides_count" edge="1" parent="1" source="A_rides_count" style="edgeStyle=none;endArrow=none;" target="E_USERS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="R_places" parent="1" style="rhombus;fontSize=12;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="places" vertex="1">
+          <mxGeometry height="80" width="160" x="660" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="L_places_users" edge="1" parent="1" source="E_USERS" style="edgeStyle=none;endArrow=none;fontSize=11;" target="R_places" value="1">
+          <mxGeometry relative="1" x="-0.2" y="40" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="780" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="E_RIDEREQ" parent="1" style="shape=mxgraph.er.entity;fontSize=13;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" value="RIDE_REQUESTS" vertex="1">
+          <mxGeometry height="60" width="180" x="650" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="L_places_req" edge="1" parent="1" source="R_places" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_RIDEREQ" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_req_id" parent="1" style="ellipse;fontSize=11;fontStyle=4;fillColor=#e1d5e7;strokeColor=#9673a6;" value="request_id (PK)" vertex="1">
+          <mxGeometry height="40" width="140" x="320" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="L_req_id" edge="1" parent="1" source="A_req_id" style="edgeStyle=none;endArrow=none;" target="E_RIDEREQ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_req_type" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="type (enum)" vertex="1">
+          <mxGeometry height="40" width="110" x="285" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="L_req_type" edge="1" parent="1" source="A_req_type" style="edgeStyle=none;endArrow=none;" target="E_RIDEREQ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_req_status" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="status (enum)" vertex="1">
+          <mxGeometry height="40" width="120" x="285" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="L_req_status" edge="1" parent="1" source="A_req_status" style="edgeStyle=none;endArrow=none;" target="E_RIDEREQ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_req_luggage" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="luggage_count" vertex="1">
+          <mxGeometry height="40" width="130" x="570" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="L_req_luggage" edge="1" parent="1" source="A_req_luggage" style="edgeStyle=none;endArrow=none;" target="E_RIDEREQ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_req_created" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="created_at" vertex="1">
+          <mxGeometry height="40" width="110" x="860" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="L_req_created" edge="1" parent="1" source="A_req_created" style="edgeStyle=none;endArrow=none;" target="E_RIDEREQ">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="E_LOC" parent="1" style="shape=mxgraph.er.entity;fontSize=14;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" value="LOCATIONS" vertex="1">
+          <mxGeometry height="60" width="160" x="1120" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="A_loc_id" parent="1" style="ellipse;fontSize=11;fontStyle=4;fillColor=#e1d5e7;strokeColor=#9673a6;" value="location_id (PK)" vertex="1">
+          <mxGeometry height="40" width="140" x="1360" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="L_loc_id" edge="1" parent="1" source="A_loc_id" style="edgeStyle=none;endArrow=none;" target="E_LOC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_loc_name" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="place_name" vertex="1">
+          <mxGeometry height="40" width="120" x="1360" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="L_loc_name" edge="1" parent="1" source="A_loc_name" style="edgeStyle=none;endArrow=none;" target="E_LOC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_loc_addr" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="address" vertex="1">
+          <mxGeometry height="40" width="100" x="1375" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="L_loc_addr" edge="1" parent="1" source="A_loc_addr" style="edgeStyle=none;endArrow=none;" target="E_LOC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_loc_lat" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="latitude" vertex="1">
+          <mxGeometry height="40" width="100" x="1210" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="L_loc_lat" edge="1" parent="1" source="A_loc_lat" style="edgeStyle=none;endArrow=none;" target="E_LOC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_loc_lng" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="longitude" vertex="1">
+          <mxGeometry height="40" width="100" x="1040" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="L_loc_lng" edge="1" parent="1" source="A_loc_lng" style="edgeStyle=none;endArrow=none;" target="E_LOC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="R_dest_req" parent="1" style="rhombus;fontSize=11;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="destination of" vertex="1">
+          <mxGeometry height="70" width="160" x="920" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="L_dest_req_1" edge="1" parent="1" source="E_RIDEREQ" style="edgeStyle=none;endArrow=none;fontSize=11;" target="R_dest_req" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L_dest_req_2" edge="1" parent="1" source="R_dest_req" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_LOC" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="R_sched_outer" parent="1" style="rhombus;fontSize=11;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;" value="scheduled as" vertex="1">
+          <mxGeometry height="80" width="160" x="660" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="R_sched_inner" parent="1" style="rhombus;fontSize=11;fillColor=none;strokeColor=#82b366;strokeWidth=1;dashed=1;pointerEvents=0;" value="" vertex="1">
+          <mxGeometry height="56" width="136" x="672" y="652" as="geometry" />
+        </mxCell>
+        <mxCell id="L_sched_1" edge="1" parent="1" source="E_RIDEREQ" style="edgeStyle=none;endArrow=none;fontSize=11;" target="R_sched_outer" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="E_SCHED_outer" parent="1" style="shape=mxgraph.er.entity;fontSize=12;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" value="SCHEDULED_RIDES" vertex="1">
+          <mxGeometry height="60" width="180" x="650" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="E_SCHED_inner" parent="1" style="shape=mxgraph.er.entity;fontSize=12;fillColor=none;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;pointerEvents=0;" value="" vertex="1">
+          <mxGeometry height="48" width="168" x="656" y="786" as="geometry" />
+        </mxCell>
+        <mxCell id="L_sched_2" edge="1" parent="1" source="R_sched_outer" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_SCHED_outer" value="0..1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_sched_id" parent="1" style="ellipse;fontSize=11;fontStyle=4;fillColor=#e1d5e7;strokeColor=#9673a6;" value="schedule_id (PK)" vertex="1">
+          <mxGeometry height="40" width="140" x="460" y="780" as="geometry" />
+        </mxCell>
+        <mxCell id="L_sched_id" edge="1" parent="1" source="A_sched_id" style="edgeStyle=none;endArrow=none;" target="E_SCHED_outer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_sched_dt" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="scheduled_datetime" vertex="1">
+          <mxGeometry height="40" width="160" x="650" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="L_sched_dt" edge="1" parent="1" source="A_sched_dt" style="edgeStyle=none;endArrow=none;" target="E_SCHED_outer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="E_POOLS" parent="1" style="shape=mxgraph.er.entity;fontSize=14;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" value="RIDE_POOLS" vertex="1">
+          <mxGeometry height="60" width="160" x="1100" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="R_dest_pool" parent="1" style="rhombus;fontSize=11;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="destination of" vertex="1">
+          <mxGeometry height="70" width="160" x="1090" y="625" as="geometry" />
+        </mxCell>
+        <mxCell id="L_dest_pool_1" edge="1" parent="1" source="E_LOC" style="edgeStyle=none;endArrow=none;fontSize=11;" target="R_dest_pool" value="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1200" y="490" />
+              <mxPoint x="1180" y="490" />
+              <mxPoint x="1180" y="575" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_dest_pool_2" edge="1" parent="1" source="R_dest_pool" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_POOLS" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_pool_id" parent="1" style="ellipse;fontSize=11;fontStyle=4;fillColor=#e1d5e7;strokeColor=#9673a6;" value="pool_id (PK)" vertex="1">
+          <mxGeometry height="40" width="130" x="1360" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="L_pool_id" edge="1" parent="1" source="A_pool_id" style="edgeStyle=none;endArrow=none;" target="E_POOLS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_pool_cap_p" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="capacity_people" vertex="1">
+          <mxGeometry height="40" width="140" x="1350" y="708" as="geometry" />
+        </mxCell>
+        <mxCell id="L_pool_cap_p" edge="1" parent="1" source="A_pool_cap_p" style="edgeStyle=none;endArrow=none;" target="E_POOLS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_pool_cap_s" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="capacity_suitcases" vertex="1">
+          <mxGeometry height="40" width="150" x="1345" y="786" as="geometry" />
+        </mxCell>
+        <mxCell id="L_pool_cap_s" edge="1" parent="1" source="A_pool_cap_s" style="edgeStyle=none;endArrow=none;" target="E_POOLS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_pool_rem_s" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="remaining_seats" vertex="1">
+          <mxGeometry height="40" width="140" x="1350" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="L_pool_rem_s" edge="1" parent="1" source="A_pool_rem_s" style="edgeStyle=none;endArrow=none;" target="E_POOLS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_pool_rem_sc" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="remaining_suitcases" vertex="1">
+          <mxGeometry height="40" width="150" x="940" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="L_pool_rem_sc" edge="1" parent="1" source="A_pool_rem_sc" style="edgeStyle=none;endArrow=none;" target="E_POOLS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_pool_status" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="status (enum)" vertex="1">
+          <mxGeometry height="40" width="120" x="930" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="L_pool_status" edge="1" parent="1" source="A_pool_status" style="edgeStyle=none;endArrow=none;" target="E_POOLS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="E_POOLMEM" parent="1" style="shape=mxgraph.er.entity;fontSize=13;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" value="POOL_MEMBERS" vertex="1">
+          <mxGeometry height="60" width="180" x="650" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="R_linked" parent="1" style="rhombus;fontSize=11;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="linked via" vertex="1">
+          <mxGeometry height="80" width="160" x="660" y="940" as="geometry" />
+        </mxCell>
+        <mxCell id="L_linked_req" edge="1" parent="1" source="E_RIDEREQ" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;fontSize=11;" target="R_linked" value="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="460" />
+              <mxPoint x="560" y="920" />
+              <mxPoint x="660" y="920" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_linked_pool" edge="1" parent="1" source="E_POOLS" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;fontSize=11;" target="R_linked" value="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1000" y="710" />
+              <mxPoint x="1000" y="920" />
+              <mxPoint x="820" y="920" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_linked_mem" edge="1" parent="1" source="R_linked" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_POOLMEM" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="R_joins" parent="1" style="rhombus;fontSize=12;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="joins" vertex="1">
+          <mxGeometry height="70" width="140" x="200" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="L_joins_users" edge="1" parent="1" source="E_USERS" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;fontSize=11;" target="R_joins" value="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="630" y="110" />
+              <mxPoint x="630" y="160" />
+              <mxPoint x="270" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_joins_mem" edge="1" parent="1" source="R_joins" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_POOLMEM" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_mem_pool" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="pool_id (FK)" vertex="1">
+          <mxGeometry height="40" width="120" x="480" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="L_mem_pool" edge="1" parent="1" source="A_mem_pool" style="edgeStyle=none;endArrow=none;" target="E_POOLMEM">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_mem_user" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="user_id (FK)" vertex="1">
+          <mxGeometry height="40" width="130" x="460" y="1080" as="geometry" />
+        </mxCell>
+        <mxCell id="L_mem_user" edge="1" parent="1" source="A_mem_user" style="edgeStyle=none;endArrow=none;" target="E_POOLMEM">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_mem_req" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="request_id (FK)" vertex="1">
+          <mxGeometry height="40" width="140" x="680" y="1190" as="geometry" />
+        </mxCell>
+        <mxCell id="L_mem_req" edge="1" parent="1" source="A_mem_req" style="edgeStyle=none;endArrow=none;" target="E_POOLMEM">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_mem_lug" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="luggage_count" vertex="1">
+          <mxGeometry height="40" width="140" x="824" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="L_mem_lug" edge="1" parent="1" source="A_mem_lug" style="edgeStyle=none;endArrow=none;" target="E_POOLMEM">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="E_MSG" parent="1" style="shape=mxgraph.er.entity;fontSize=14;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" value="MESSAGES" vertex="1">
+          <mxGeometry height="60" width="160" x="1100" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="R_hosts" parent="1" style="rhombus;fontSize=12;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="hosts" vertex="1">
+          <mxGeometry height="80" width="160" x="1100" y="880" as="geometry" />
+        </mxCell>
+        <mxCell id="L_hosts_pool" edge="1" parent="1" source="E_POOLS" style="edgeStyle=none;endArrow=none;fontSize=11;" target="R_hosts" value="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L_hosts_msg" edge="1" parent="1" source="R_hosts" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_MSG" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="R_sends" parent="1" style="rhombus;fontSize=12;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="sends" vertex="1">
+          <mxGeometry height="70" width="140" x="860" y="1010" as="geometry" />
+        </mxCell>
+        <mxCell id="L_sends_users" edge="1" parent="1" source="E_USERS" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;fontSize=11;" target="R_sends" value="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="630" y="110" />
+              <mxPoint x="630" y="160" />
+              <mxPoint x="1350" y="160" />
+              <mxPoint x="1350" y="1045" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_sends_msg" edge="1" parent="1" source="R_sends" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_MSG" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_msg_id" parent="1" style="ellipse;fontSize=11;fontStyle=4;fillColor=#e1d5e7;strokeColor=#9673a6;" value="message_id (PK)" vertex="1">
+          <mxGeometry height="40" width="140" x="1320" y="990" as="geometry" />
+        </mxCell>
+        <mxCell id="L_msg_id" edge="1" parent="1" source="A_msg_id" style="edgeStyle=none;endArrow=none;" target="E_MSG">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_msg_text" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="message" vertex="1">
+          <mxGeometry height="40" width="110" x="1330" y="1040" as="geometry" />
+        </mxCell>
+        <mxCell id="L_msg_text" edge="1" parent="1" source="A_msg_text" style="edgeStyle=none;endArrow=none;" target="E_MSG">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_msg_created" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="created_at" vertex="1">
+          <mxGeometry height="40" width="110" x="1130" y="1120" as="geometry" />
+        </mxCell>
+        <mxCell id="L_msg_created" edge="1" parent="1" source="A_msg_created" style="edgeStyle=none;endArrow=none;" target="E_MSG">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="E_SESS" parent="1" style="shape=mxgraph.er.entity;fontSize=13;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" value="USER_SESSIONS" vertex="1">
+          <mxGeometry height="60" width="180" x="440" y="1280" as="geometry" />
+        </mxCell>
+        <mxCell id="R_has" parent="1" style="rhombus;fontSize=12;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="has" vertex="1">
+          <mxGeometry height="70" width="140" x="440" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="L_has_users" edge="1" parent="1" source="E_USERS" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;fontSize=11;" target="R_has" value="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="630" y="110" />
+              <mxPoint x="630" y="190" />
+              <mxPoint x="170" y="190" />
+              <mxPoint x="170" y="1215" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_has_sess" edge="1" parent="1" source="R_has" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_SESS" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_sess_id" parent="1" style="ellipse;fontSize=11;fontStyle=4;fillColor=#e1d5e7;strokeColor=#9673a6;" value="session_id (PK)" vertex="1">
+          <mxGeometry height="40" width="140" x="280" y="1280" as="geometry" />
+        </mxCell>
+        <mxCell id="L_sess_id" edge="1" parent="1" source="A_sess_id" style="edgeStyle=none;endArrow=none;" target="E_SESS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_sess_token" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="session_token" vertex="1">
+          <mxGeometry height="40" width="130" x="460" y="1390" as="geometry" />
+        </mxCell>
+        <mxCell id="L_sess_token" edge="1" parent="1" source="A_sess_token" style="edgeStyle=none;endArrow=none;" target="E_SESS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_sess_exp" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="expires_at" vertex="1">
+          <mxGeometry height="40" width="110" x="650" y="1300" as="geometry" />
+        </mxCell>
+        <mxCell id="L_sess_exp" edge="1" parent="1" source="A_sess_exp" style="edgeStyle=none;endArrow=none;" target="E_SESS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="E_LOGS" parent="1" style="shape=mxgraph.er.entity;fontSize=14;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;" value="LOGIN_LOGS" vertex="1">
+          <mxGeometry height="60" width="160" x="920" y="1280" as="geometry" />
+        </mxCell>
+        <mxCell id="R_logs" parent="1" style="rhombus;fontSize=12;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="logs" vertex="1">
+          <mxGeometry height="70" width="140" x="920" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="L_logs_users" edge="1" parent="1" source="E_USERS" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;fontSize=11;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="R_logs" value="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1500" y="107" />
+              <mxPoint x="1500" y="1212" />
+              <mxPoint x="1060" y="1212" />
+            </Array>
+            <mxPoint x="870" y="107.46" as="sourcePoint" />
+            <mxPoint x="1109.8461538461538" y="1212.536923076923" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="L_logs_log" edge="1" parent="1" source="R_logs" style="edgeStyle=none;endArrow=none;fontSize=11;" target="E_LOGS" value="N">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_log_id" parent="1" style="ellipse;fontSize=11;fontStyle=4;fillColor=#e1d5e7;strokeColor=#9673a6;" value="log_id (PK)" vertex="1">
+          <mxGeometry height="40" width="120" x="1120" y="1260" as="geometry" />
+        </mxCell>
+        <mxCell id="L_log_id" edge="1" parent="1" source="A_log_id" style="edgeStyle=none;endArrow=none;" target="E_LOGS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_log_status" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="login_status (enum)" vertex="1">
+          <mxGeometry height="40" width="150" x="1120" y="1320" as="geometry" />
+        </mxCell>
+        <mxCell id="L_log_status" edge="1" parent="1" source="A_log_status" style="edgeStyle=none;endArrow=none;" target="E_LOGS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="A_log_at" parent="1" style="ellipse;fontSize=11;fillColor=#e1d5e7;strokeColor=#9673a6;" value="logged_at" vertex="1">
+          <mxGeometry height="40" width="110" x="930" y="1390" as="geometry" />
+        </mxCell>
+        <mxCell id="L_log_at" edge="1" parent="1" source="A_log_at" style="edgeStyle=none;endArrow=none;" target="E_LOGS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2XwvMYt3yYJ-FbbQST-g-1" edge="1" parent="1" source="A_loc_name" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;" target="A_loc_name">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2XwvMYt3yYJ-FbbQST-g-2" edge="1" parent="1" source="A_loc_addr" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;" target="A_loc_addr">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

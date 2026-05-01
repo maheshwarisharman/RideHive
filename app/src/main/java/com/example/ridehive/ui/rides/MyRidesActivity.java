@@ -18,6 +18,7 @@ import com.example.ridehive.R;
 import com.example.ridehive.network.ApiClient;
 import com.example.ridehive.network.models.RideRequestItem;
 import com.example.ridehive.ui.home.HomeActivity;
+import com.example.ridehive.ui.profile.ProfileActivity;
 import com.example.ridehive.util.UiUtil;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -77,6 +78,11 @@ public class MyRidesActivity extends AppCompatActivity {
                 if (id == R.id.nav_rides) return true;
                 if (id == R.id.nav_home) {
                     startActivity(new Intent(MyRidesActivity.this, HomeActivity.class));
+                    finish();
+                    return true;
+                }
+                if (id == R.id.nav_profile) {
+                    startActivity(new Intent(MyRidesActivity.this, ProfileActivity.class));
                     finish();
                     return true;
                 }

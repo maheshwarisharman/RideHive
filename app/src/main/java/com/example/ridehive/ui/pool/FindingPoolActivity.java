@@ -20,6 +20,8 @@ import com.example.ridehive.R;
 import com.example.ridehive.network.ApiClient;
 import com.example.ridehive.network.models.CancelRideRequest;
 import com.example.ridehive.network.models.MessageResponse;
+import com.example.ridehive.network.models.PoolDetails;
+import com.example.ridehive.network.models.RideRequestItem;
 import com.example.ridehive.ui.home.HomeActivity;
 import com.example.ridehive.util.UiUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -42,24 +44,32 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
     public static final String EXTRA_DEST_LAT = "extra_dest_lat";
     public static final String EXTRA_DEST_LNG = "extra_dest_lng";
     public static final String EXTRA_REQUEST_ID = "extra_request_id";
+    public static final String EXTRA_POOL_ID = "extra_pool_id";
 
     private GoogleMap googleMap;
     private Marker destinationMarker;
     private LatLng pendingLatLng;
     private String pendingLabel;
 
-    private PoolsAdapter poolsAdapter;
+    private PoolMembersAdapter poolMembersAdapter;
     private int requestId;
     private int luggageCount;
     private ProgressBar progressBar;
     private TextView percentView;
     private TextView matchedCountView;
     private TextView waitTimeView;
+    private TextView destinationView;
+    private int currentPoolId = -1;
+    private MaterialButton startRideButton;
     private final Handler refreshHandler = new Handler(Looper.getMainLooper());
     private final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
-            loadPools();
+            if (currentPoolId > 0) {
+                loadCurrentPoolDetails(currentPoolId);
+            } else {
+                pollForPoolId();
+            }
             refreshHandler.postDelayed(this, 8000);
         }
     };
@@ -71,13 +81,13 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
 
         ImageView back = findViewById(R.id.iv_back);
         ImageView more = findViewById(R.id.iv_more);
-        TextView destination = findViewById(R.id.tv_destination_value);
+        destinationView = findViewById(R.id.tv_destination_value);
         matchedCountView = findViewById(R.id.tv_matched_count);
         progressBar = findViewById(R.id.progress);
         percentView = findViewById(R.id.tv_percent);
         waitTimeView = findViewById(R.id.tv_wait_time);
         RecyclerView list = findViewById(R.id.rv_matched_partners);
-        MaterialButton cancel = findViewById(R.id.btn_cancel_matching);
+        startRideButton = findViewById(R.id.btn_start_ride);
         ImageView zoomIn = findViewById(R.id.btn_zoom_in);
         ImageView zoomOut = findViewById(R.id.btn_zoom_out);
 
@@ -86,8 +96,12 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
         double lat = getIntent() != null ? getIntent().getDoubleExtra(EXTRA_DEST_LAT, Double.NaN) : Double.NaN;
         double lng = getIntent() != null ? getIntent().getDoubleExtra(EXTRA_DEST_LNG, Double.NaN) : Double.NaN;
         requestId = getIntent() != null ? getIntent().getIntExtra(EXTRA_REQUEST_ID, 0) : 0;
+        int poolIdFromJoin = getIntent() != null ? getIntent().getIntExtra(EXTRA_POOL_ID, -1) : -1;
 
-        destination.setText(dest == null ? "" : dest);
+        destinationView.setText(dest == null ? "" : dest);
+        if (poolIdFromJoin > 0 && (dest == null || dest.trim().isEmpty())) {
+            destinationView.setText("Loading...");
+        }
 
         if (!Double.isNaN(lat) && !Double.isNaN(lng)) {
             pendingLatLng = new LatLng(lat, lng);
@@ -100,16 +114,46 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
         }
 
         list.setLayoutManager(new LinearLayoutManager(this));
-        poolsAdapter = new PoolsAdapter(new PoolsAdapter.Listener() {
-            @Override
-            public void onJoinClicked(int poolId) {
-                joinPool(poolId);
-            }
-        });
-        list.setAdapter(poolsAdapter);
+        poolMembersAdapter = new PoolMembersAdapter();
+        list.setAdapter(poolMembersAdapter);
+
         matchedCountView.setText("Loading...");
         updateMatchingProgress(0);
-        loadPools();
+        if (poolIdFromJoin > 0) {
+            currentPoolId = poolIdFromJoin;
+            loadCurrentPoolDetails(poolIdFromJoin);
+        } else {
+            pollForPoolId();
+        }
+
+        startRideButton.setEnabled(currentPoolId > 0);
+        startRideButton.setOnClickListener(v -> {
+            if (currentPoolId <= 0) {
+                Toast.makeText(FindingPoolActivity.this, "Waiting for a partner to join...", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            startRideButton.setEnabled(false);
+            ApiClient.api(this).startPool(currentPoolId).enqueue(new retrofit2.Callback<MessageResponse>() {
+                @Override
+                public void onResponse(retrofit2.Call<MessageResponse> call, retrofit2.Response<MessageResponse> response) {
+                    startRideButton.setEnabled(true);
+                    if (response.isSuccessful()) {
+                        Toast.makeText(FindingPoolActivity.this, "Ride started!", Toast.LENGTH_LONG).show();
+                        // Navigate to a "Ride In Progress" screen or just stay here with a "Started" state
+                        startRideButton.setText("RIDE IN PROGRESS");
+                        startRideButton.setEnabled(false);
+                    } else {
+                        Toast.makeText(FindingPoolActivity.this, com.example.ridehive.util.UiUtil.errorMessage(response), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(retrofit2.Call<MessageResponse> call, Throwable t) {
+                    startRideButton.setEnabled(true);
+                    Toast.makeText(FindingPoolActivity.this, "Connection error", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
 
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,18 +161,7 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
                 finish();
             }
         });
-        more.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(FindingPoolActivity.this, "Coming soon", Toast.LENGTH_SHORT).show();
-            }
-        });
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                performCancelMatching();
-            }
-        });
+        more.setOnClickListener(v -> performCancelMatching());
 
         zoomIn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -183,43 +216,114 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
         googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14.5f));
     }
 
-    private void loadPools() {
-        com.example.ridehive.network.ApiClient.api(this)
-                .pools()
-                .enqueue(new retrofit2.Callback<java.util.List<com.example.ridehive.network.models.PoolSummary>>() {
+    private void pollForPoolId() {
+        if (requestId <= 0) {
+            matchedCountView.setText("Waiting...");
+            waitTimeView.setText("Waiting for partner to join...");
+            return;
+        }
+        ApiClient.api(this)
+                .rides()
+                .enqueue(new retrofit2.Callback<List<RideRequestItem>>() {
                     @Override
-                    public void onResponse(retrofit2.Call<java.util.List<com.example.ridehive.network.models.PoolSummary>> call,
-                                           retrofit2.Response<java.util.List<com.example.ridehive.network.models.PoolSummary>> response) {
+                    public void onResponse(retrofit2.Call<List<RideRequestItem>> call, retrofit2.Response<List<RideRequestItem>> response) {
                         if (!response.isSuccessful() || response.body() == null) {
-                            matchedCountView.setText("Failed");
-                            android.widget.Toast.makeText(FindingPoolActivity.this,
-                                    com.example.ridehive.util.UiUtil.errorMessage(response),
-                                    android.widget.Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        java.util.List<com.example.ridehive.network.models.PoolSummary> pools = response.body();
-                        poolsAdapter.setItems(pools);
-                        matchedCountView.setText(pools.size() + " Available");
-                        updateMatchingProgress(pools);
+                        for (RideRequestItem item : response.body()) {
+                            if (item.request_id == requestId && item.pool_id != null && item.pool_id > 0) {
+                                currentPoolId = item.pool_id;
+                                loadCurrentPoolDetails(currentPoolId);
+                                return;
+                            }
+                        }
+                        matchedCountView.setText("Waiting...");
+                        waitTimeView.setText("Waiting for partner to join...");
                     }
 
                     @Override
-                    public void onFailure(retrofit2.Call<java.util.List<com.example.ridehive.network.models.PoolSummary>> call, Throwable t) {
-                        matchedCountView.setText("Failed");
-                        updateMatchingProgress(0);
-                        android.widget.Toast.makeText(FindingPoolActivity.this,
-                                com.example.ridehive.util.UiUtil.errorMessage(t),
-                                android.widget.Toast.LENGTH_SHORT).show();
+                    public void onFailure(retrofit2.Call<List<RideRequestItem>> call, Throwable t) {
+                        // ignore; next poll will retry
                     }
                 });
     }
 
-    private void updateMatchingProgress(@NonNull List<com.example.ridehive.network.models.PoolSummary> pools) {
-        int totalMatchedUsers = 0;
-        for (com.example.ridehive.network.models.PoolSummary pool : pools) {
-            totalMatchedUsers += Math.max(pool.total_members, 0);
+    private void loadCurrentPoolDetails(int poolId) {
+        ApiClient.api(this)
+                .poolDetails(poolId)
+                .enqueue(new retrofit2.Callback<PoolDetails>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<PoolDetails> call, retrofit2.Response<PoolDetails> response) {
+                        if (!response.isSuccessful() || response.body() == null) {
+                            matchedCountView.setText("Pool unavailable");
+                            Toast.makeText(FindingPoolActivity.this, UiUtil.errorMessage(response), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        bindCurrentPool(response.body());
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<PoolDetails> call, Throwable t) {
+                        matchedCountView.setText("Pool unavailable");
+                        Toast.makeText(FindingPoolActivity.this, UiUtil.errorMessage(t), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void bindCurrentPool(@NonNull PoolDetails details) {
+        poolMembersAdapter.setItems(details.members == null ? new ArrayList<>() : details.members);
+
+        // DO NOT overwrite destinationView with pool-wide location. 
+        // Keep the one from the Intent which represents the user's personal choice.
+
+        if (googleMap != null) {
+            googleMap.clear(); // Clear old markers
+
+            // Show MY destination on the map (passed via intent)
+            double myLat = getIntent().getDoubleExtra(EXTRA_DEST_LAT, Double.NaN);
+            double myLng = getIntent().getDoubleExtra(EXTRA_DEST_LNG, Double.NaN);
+            String myDestName = getIntent().getStringExtra(EXTRA_DESTINATION);
+
+            if (!Double.isNaN(myLat) && !Double.isNaN(myLng)) {
+                LatLng myDest = new LatLng(myLat, myLng);
+                googleMap.addMarker(new MarkerOptions()
+                        .position(myDest)
+                        .title("My Destination")
+                        .snippet(myDestName));
+                
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myDest, 14.5f));
+            }
         }
-        updateMatchingProgress(totalMatchedUsers);
+
+        int totalMembers = details.members == null ? 0 : details.members.size();
+        matchedCountView.setText(totalMembers + " In Cab");
+        
+        if (details.scheduled_time != null && !details.scheduled_time.isEmpty()) {
+            waitTimeView.setText(formatScheduledTime(details.scheduled_time));
+            // For scheduled rides, progress is fixed to indicate it's a future ride
+            progressBar.setProgress(100);
+            percentView.setText("READY");
+        } else {
+            updateMatchingProgress(totalMembers, details.capacity_people);
+        }
+        
+        startRideButton.setEnabled(true);
+    }
+
+    private String formatScheduledTime(String raw) {
+        if (raw == null || raw.isEmpty()) return "";
+        try {
+            // raw format: "YYYY-MM-DD HH:MM:SS"
+            String[] parts = raw.split(" ");
+            if (parts.length >= 2) {
+                String date = parts[0];
+                String time = parts[1].substring(0, 5); // Just HH:mm
+                return "Scheduled for: " + date + " @ " + time;
+            }
+            return "Scheduled for: " + raw;
+        } catch (Exception e) {
+            return "Scheduled Ride";
+        }
     }
 
     private void updateMatchingProgress(int matchedUsers) {
@@ -236,33 +340,19 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
         }
     }
 
-    private void joinPool(int poolId) {
-        if (requestId <= 0) {
-            android.widget.Toast.makeText(this, "Missing request id. Try again.", android.widget.Toast.LENGTH_SHORT).show();
-            return;
-        }
-        com.example.ridehive.network.ApiClient.api(this)
-                .joinPool(new com.example.ridehive.network.models.JoinPoolRequest(poolId, requestId, luggageCount))
-                .enqueue(new retrofit2.Callback<com.example.ridehive.network.models.MessageResponse>() {
-                    @Override
-                    public void onResponse(retrofit2.Call<com.example.ridehive.network.models.MessageResponse> call,
-                                           retrofit2.Response<com.example.ridehive.network.models.MessageResponse> response) {
-                        if (!response.isSuccessful()) {
-                            android.widget.Toast.makeText(FindingPoolActivity.this,
-                                    com.example.ridehive.util.UiUtil.errorMessage(response),
-                                    android.widget.Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        android.widget.Toast.makeText(FindingPoolActivity.this, "Joined pool", android.widget.Toast.LENGTH_SHORT).show();
-                    }
+    private void updateMatchingProgress(int members, int capacityPeople) {
+        int safeCapacity = Math.max(capacityPeople, 1);
+        int safeMembers = Math.max(members, 0);
+        int percent = Math.min(100, (safeMembers * 100) / safeCapacity);
+        progressBar.setProgress(percent);
+        percentView.setText(String.format(Locale.getDefault(), "%d%%", percent));
 
-                    @Override
-                    public void onFailure(retrofit2.Call<com.example.ridehive.network.models.MessageResponse> call, Throwable t) {
-                        android.widget.Toast.makeText(FindingPoolActivity.this,
-                                com.example.ridehive.util.UiUtil.errorMessage(t),
-                                android.widget.Toast.LENGTH_SHORT).show();
-                    }
-                });
+        if (percent >= 100) {
+            waitTimeView.setText("Pool is full");
+        } else {
+            int remaining = Math.max(0, safeCapacity - safeMembers);
+            waitTimeView.setText(String.format(Locale.getDefault(), "Waiting for %d more rider(s)", remaining));
+        }
     }
 
     private void performCancelMatching() {
@@ -294,11 +384,22 @@ public class FindingPoolActivity extends AppCompatActivity implements OnMapReady
 
     private void resetPoolUiState() {
         refreshHandler.removeCallbacks(refreshRunnable);
-        if (poolsAdapter != null) poolsAdapter.clear();
+        currentPoolId = -1;
+        if (poolMembersAdapter != null) poolMembersAdapter.setItems(new ArrayList<>());
         if (progressBar != null) progressBar.setProgress(0);
         if (percentView != null) percentView.setText("0%");
         if (matchedCountView != null) matchedCountView.setText("0 Available");
         if (waitTimeView != null) waitTimeView.setText("Matching stopped");
+        if (startRideButton != null) startRideButton.setEnabled(false);
+    }
+
+    private static double parseDouble(String value) {
+        if (value == null || value.trim().isEmpty()) return Double.NaN;
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return Double.NaN;
+        }
     }
 
     private void navigateHome() {

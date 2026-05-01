@@ -251,7 +251,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Matched Partners"
+            android:text="Ride partners"
             android:textColor="@color/rh_text_primary"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -278,18 +278,18 @@
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
         android:overScrollMode="never"
-        app:layout_constraintBottom_toTopOf="@id/btn_cancel_matching"
+        app:layout_constraintBottom_toTopOf="@id/btn_start_ride"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ll_matched_header" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_cancel_matching"
+        android:id="@+id/btn_start_ride"
         android:layout_width="0dp"
         android:layout_height="58dp"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="6dp"
-        android:text="Cancel Matching"
+        android:text="Start Ride"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="16sp"

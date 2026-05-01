@@ -46,7 +46,14 @@ public class NearbyRidersAdapter extends RecyclerView.Adapter<NearbyRidersAdapte
     public void onBindViewHolder(@NonNull VH holder, int position) {
         NearbyRider rider = items.get(position);
         holder.name.setText(rider.getName());
-        holder.destination.setText(rider.getDestination());
+        
+        String destText = rider.getDestination();
+        if (rider.getScheduledTime() != null && !rider.getScheduledTime().isEmpty()) {
+            destText += " • " + formatScheduledTime(rider.getScheduledTime());
+        }
+        destText += " • " + rider.getMemberCount() + " in cab";
+        holder.destination.setText(destText);
+
         holder.avatar.setImageResource(position % 2 == 0 ? R.drawable.ic_avatar_1 : R.drawable.ic_avatar_2);
         holder.joinButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,6 +66,22 @@ public class NearbyRidersAdapter extends RecyclerView.Adapter<NearbyRidersAdapte
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    private String formatScheduledTime(String raw) {
+        if (raw == null || raw.isEmpty()) return "";
+        try {
+            // raw format from backend: "YYYY-MM-DD HH:MM:SS"
+            String[] parts = raw.split(" ");
+            if (parts.length >= 2) {
+                String date = parts[0];
+                String time = parts[1].substring(0, 5); // Just HH:mm
+                return "Scheduled: " + date + " @ " + time;
+            }
+            return "Scheduled: " + raw;
+        } catch (Exception e) {
+            return "Scheduled";
+        }
     }
 
     static class VH extends RecyclerView.ViewHolder {
