@@ -129,7 +129,24 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Uses the same API key as Maps SDK (from @string/google_maps_key)
             Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
         }
+        if (!Places.isInitialized()) {
+            // Uses the same API key as Maps SDK (from @string/google_maps_key)
+            Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
+        }
 
+        ridersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        nearbyRidersAdapter = new NearbyRidersAdapter(new ArrayList<>(), new NearbyRidersAdapter.Listener() {
+            @Override
+            public void onJoinClicked(@NonNull NearbyRider rider) {
+                String dest = destinationEditText.getText() == null ? "" : destinationEditText.getText().toString().trim();
+                if (TextUtils.isEmpty(dest) || selectedDestinationLatLng == null) {
+                    Toast.makeText(HomeActivity.this, "Select your destination first", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                pendingPartnerRequestId = rider.getPoolId();
+                startLuggageFlow(dest, selectedDestinationLatLng);
+            }
+        });
         ridersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         nearbyRidersAdapter = new NearbyRidersAdapter(new ArrayList<>(), new NearbyRidersAdapter.Listener() {
             @Override
@@ -217,7 +234,6 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                     finish();
                     return true;
                 }
-                Toast.makeText(HomeActivity.this, "Coming soon", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });

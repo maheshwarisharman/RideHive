@@ -86,7 +86,6 @@ public class MyRidesActivity extends AppCompatActivity {
                     finish();
                     return true;
                 }
-                Toast.makeText(MyRidesActivity.this, "Coming soon", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });

@@ -51,7 +51,6 @@ public class ProfileActivity extends AppCompatActivity {
                     finish();
                     return true;
                 }
-                Toast.makeText(ProfileActivity.this, "Coming soon", Toast.LENGTH_SHORT).show();
                 return true;
             }
         });

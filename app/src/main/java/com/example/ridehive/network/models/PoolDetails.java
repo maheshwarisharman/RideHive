@@ -7,7 +7,7 @@ public class PoolDetails {
     public int location_id;
     public int capacity_people;
     public int capacity_suitcases;
-    public int remaining_seats;
+    public int remaining_people;
     public int remaining_suitcases;
     public String status;
     public String created_at;
