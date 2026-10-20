@@ -38,3 +38,30 @@ jest.mock('expo-notifications', () => ({
   addNotificationReceivedListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
   addNotificationResponseReceivedListener: jest.fn().mockReturnValue({ remove: jest.fn() }),
 }));
+
+// Mock Supabase
+jest.mock('@supabase/supabase-js', () => ({
+  createClient: jest.fn(() => ({
+    auth: {
+      signInWithOtp: jest.fn().mockResolvedValue({ data: {}, error: null }),
+      verifyOtp: jest.fn().mockResolvedValue({ data: { session: { user: { id: 'test-user-id' } } }, error: null }),
+      getSession: jest.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      signOut: jest.fn().mockResolvedValue({ error: null }),
+      onAuthStateChange: jest.fn().mockReturnValue({ data: { subscription: { unsubscribe: jest.fn() } } }),
+    },
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      upsert: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: null, error: null }),
+    })),
+    functions: {
+      invoke: jest.fn().mockResolvedValue({ data: null, error: null }),
+    },
+    rpc: jest.fn().mockResolvedValue({ data: null, error: null }),
+  })),
+}));
