@@ -6,7 +6,7 @@
 |---|---|---|---|
 | **Phase 0: Bootstrap** | Repo, Expo + TS strict, Expo Router, ESLint, Prettier, Jest, Supabase CLI init, CI skeleton, README stub, ARCHITECTURE.md | **Completed** | Full Expo SDK 58 setup, Expo Router layout, Jest tests passing (10/10), TypeScript strict passing, ESLint passing, CI workflow configured, tagged `phase-0-bootstrap` |
 | **Phase 1: Database** | PostGIS extensions, tables, indexes, RLS policies, RPCs, triggers, pg_cron, seed.sql, pgTAP tests, generated types | **Completed** | Full schema migration with PostGIS, RLS on all 16 tables, 12 concurrency-safe RPCs, 16 curated seed locations, pgTAP test suite, tagged `phase-1-database` |
-| **Phase 2: Design System** | Tokens, fonts, all UI primitives, navigation shell with tabs, hidden dev showcase | Pending | Component suite, UI verification |
+| **Phase 2: Design System** | Tokens, fonts, all UI primitives, navigation shell with tabs, hidden dev showcase | **Completed** | Restrained Uber-rider aesthetic, Inter fonts, 18 UI primitives in `components/ui`, 4-tab shell (`(tabs)/_layout.tsx`), hidden `dev-showcase.tsx`, 18 Jest unit tests passing, tagged `phase-2-design-system` |
 | **Phase 3: Auth & Onboarding** | OTP flow, @bmu.edu.in domain restrictions in 3 layers, session persistence, profile onboarding | Pending | Auth flow, validation tests |
 | **Phase 4: Maps & Locations** | Edge Functions (places-autocomplete, place-details, route), location picker, route preview, custom map style | Pending | Maps rendering, caching verification |
 | **Phase 5: Create Pool** | 4-step wizard, route preview, liquidity guard check, fare estimate calculation | Pending | Pool creation flow, concurrency guards |
