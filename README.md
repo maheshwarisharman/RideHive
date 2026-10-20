@@ -64,6 +64,23 @@ npx expo start
 
 ---
 
+## Production Supabase Configuration
+
+### Custom SMTP Provider Setup (Crucial)
+In production, Supabase Auth's default email service is restricted to a low rate limit (roughly 3-4 emails/hour). Before real use on campus:
+1. Navigate to **Project Settings > Auth > SMTP Settings** in your Supabase Dashboard.
+2. Enable **Custom SMTP** and connect your university or transactional email provider (SendGrid, Postmark, AWS SES, or Brevo).
+3. Under **Auth > Email Templates > Magic Link / Confirmation**, update the subject and message body to present the 6-digit verification code directly:
+   ```html
+   <h2>RideHive Verification Code</h2>
+   <p>Your one-time campus login code is:</p>
+   <h1 style="letter-spacing: 4px; font-family: monospace;">{{ .Token }}</h1>
+   <p>This code will expire in 10 minutes. Do not share it with anyone.</p>
+   ```
+   *Note: RideHive mobile app uses `signInWithOtp` and `verifyOtp` requiring the 6-digit `{{ .Token }}` instead of redirect magic links.*
+
+---
+
 ## CI / Testing
 ```bash
 # Typecheck mobile app
