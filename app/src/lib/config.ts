@@ -2,8 +2,11 @@
  * Application environment configuration
  */
 
+const rawSupabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const cleanSupabaseUrl = rawSupabaseUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+
 export const config = {
-  supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  supabaseUrl: cleanSupabaseUrl,
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key',
   campus: {
     name: process.env.EXPO_PUBLIC_CAMPUS_NAME || 'BML Munjal University Main Gate',

@@ -243,10 +243,10 @@ export const safetyService = {
       if (params.phone !== undefined) {
         await (supabase.from('profile_private') as any).upsert(
           {
-            id: user.id,
+            user_id: user.id,
             phone: params.phone.trim() || null,
           },
-          { onConflict: 'id' }
+          { onConflict: 'user_id' }
         );
       }
 
@@ -275,7 +275,7 @@ export const safetyService = {
         .eq('id', user.id);
 
       // Delete private info and tokens
-      await (supabase.from('profile_private') as any).delete().eq('id', user.id);
+      await (supabase.from('profile_private') as any).delete().eq('user_id', user.id);
       await (supabase.from('device_tokens') as any).delete().eq('user_id', user.id);
 
       // Sign out

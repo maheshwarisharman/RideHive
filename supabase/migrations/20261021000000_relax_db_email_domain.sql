@@ -24,9 +24,9 @@ BEGIN
   )
   ON CONFLICT (id) DO NOTHING;
 
-  INSERT INTO public.profile_private (id)
+  INSERT INTO public.profile_private (user_id)
   VALUES (NEW.id)
-  ON CONFLICT (id) DO NOTHING;
+  ON CONFLICT (user_id) DO NOTHING;
 
   INSERT INTO public.notification_prefs (user_id)
   VALUES (NEW.id)

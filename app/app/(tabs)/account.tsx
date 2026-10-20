@@ -81,7 +81,7 @@ export default function AccountScreen() {
     try {
       const [profileRes, privateRes, prefsRes, blockedRes] = await Promise.all([
         (supabase.from('profiles') as any).select('*').eq('id', user.id).single(),
-        (supabase.from('profile_private') as any).select('*').eq('id', user.id).single(),
+        (supabase.from('profile_private') as any).select('*').eq('user_id', user.id).single(),
         safetyService.fetchNotificationPrefs(),
         safetyService.fetchBlockedUsers(),
       ]);
