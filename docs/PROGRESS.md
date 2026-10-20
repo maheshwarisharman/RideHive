@@ -4,7 +4,7 @@
 
 | Phase | Description | Status | Verification & Artifacts |
 |---|---|---|---|
-| **Phase 0: Bootstrap** | Repo, Expo + TS strict, Expo Router, ESLint, Prettier, Jest, Supabase CLI init, CI skeleton, README stub, ARCHITECTURE.md | **In Progress** | Working configs, passing typecheck/lint/test |
+| **Phase 0: Bootstrap** | Repo, Expo + TS strict, Expo Router, ESLint, Prettier, Jest, Supabase CLI init, CI skeleton, README stub, ARCHITECTURE.md | **Completed** | Full Expo SDK 58 setup, Expo Router layout, Jest tests passing (10/10), TypeScript strict passing, ESLint passing, CI workflow configured, tagged `phase-0-bootstrap` |
 | **Phase 1: Database** | PostGIS extensions, tables, indexes, RLS policies, RPCs, triggers, pg_cron, seed.sql, pgTAP tests, generated types | Pending | Supabase migrations, test suite |
 | **Phase 2: Design System** | Tokens, fonts, all UI primitives, navigation shell with tabs, hidden dev showcase | Pending | Component suite, UI verification |
 | **Phase 3: Auth & Onboarding** | OTP flow, @bmu.edu.in domain restrictions in 3 layers, session persistence, profile onboarding | Pending | Auth flow, validation tests |
