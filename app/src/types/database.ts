@@ -533,7 +533,7 @@ export interface Database {
           p_dest_lng: number;
           p_window_start: string;
           p_window_end: string;
-          p_seats_needed: number;
+          p_seats_needed?: number;
           p_user_id?: string | null;
         };
         Returns: {
@@ -556,10 +556,31 @@ export interface Database {
           dest_distance_m: number;
         }[];
       };
+      create_pool: {
+        Args: {
+          p_origin_name: string;
+          p_origin_lat: number;
+          p_origin_lng: number;
+          p_destination_name: string;
+          p_dest_lat: number;
+          p_dest_lng: number;
+          p_destination_place_id?: string | null;
+          p_departs_at: string;
+          p_flexibility_minutes: number;
+          p_total_seats: number;
+          p_join_mode: string;
+          p_note?: string | null;
+          p_estimated_fare_min: number;
+          p_estimated_fare_max: number;
+          p_route_polyline?: string | null;
+          p_route_distance_m?: number | null;
+          p_route_duration_s?: number | null;
+        };
+        Returns: string;
+      };
       join_pool: {
         Args: {
           p_pool_id: string;
-          p_user_id: string;
         };
         Returns: {
           success: boolean;
@@ -567,15 +588,59 @@ export interface Database {
           message: string;
         };
       };
+      approve_member: {
+        Args: {
+          p_pool_id: string;
+          p_target_user_id: string;
+        };
+        Returns: boolean;
+      };
       leave_pool: {
         Args: {
           p_pool_id: string;
-          p_user_id: string;
         };
-        Returns: {
-          success: boolean;
-          message: string;
+        Returns: boolean;
+      };
+      close_pool: {
+        Args: {
+          p_pool_id: string;
         };
+        Returns: boolean;
+      };
+      mark_booked: {
+        Args: {
+          p_pool_id: string;
+          p_provider: string;
+          p_vehicle_number?: string | null;
+          p_note?: string | null;
+        };
+        Returns: boolean;
+      };
+      cancel_pool: {
+        Args: {
+          p_pool_id: string;
+        };
+        Returns: boolean;
+      };
+      complete_pool: {
+        Args: {
+          p_pool_id: string;
+          p_final_fare_paise: number;
+        };
+        Returns: boolean;
+      };
+      mark_settlement_paid: {
+        Args: {
+          p_pool_id: string;
+        };
+        Returns: boolean;
+      };
+      confirm_settlement: {
+        Args: {
+          p_pool_id: string;
+          p_payer_id: string;
+        };
+        Returns: boolean;
       };
       get_pool_member_contacts: {
         Args: {
@@ -590,5 +655,8 @@ export interface Database {
         }[];
       };
     };
+    Views: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }
