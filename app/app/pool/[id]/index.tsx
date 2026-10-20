@@ -38,22 +38,22 @@ import {
   Toast,
   Chip,
   ListRow,
-} from '../../src/components/ui';
-import { RoutePreviewMap } from '../../src/features/maps/RoutePreviewMap';
-import { mapsService } from '../../src/features/maps/mapsService';
+} from '../../../src/components/ui';
+import { RoutePreviewMap } from '../../../src/features/maps/RoutePreviewMap';
+import { mapsService } from '../../../src/features/maps/mapsService';
 import {
   poolLifecycleService,
   DetailedPool,
   PoolMemberInfo,
-} from '../../src/features/pools/poolLifecycleService';
-import { useAuthStore } from '../../src/features/auth/authStore';
-import { formatPaise, formatRideTime } from '../../src/lib/formatters';
-import { colors, radii, spacing, typography } from '../../src/theme/tokens';
+} from '../../../src/features/pools/poolLifecycleService';
+import { useAuthStore } from '../../../src/features/auth/authStore';
+import { formatPaise, formatRideTime } from '../../../src/lib/formatters';
+import { colors, radii, spacing, typography } from '../../../src/theme/tokens';
 
 export default function PoolDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state: any) => state.user);
 
   const [pool, setPool] = useState<DetailedPool | null>(null);
   const [contacts, setContacts] = useState<any[]>([]);
@@ -254,8 +254,8 @@ export default function PoolDetailScreen() {
   const isCompleted = pool.status === 'completed';
   const isCancelled = pool.status === 'cancelled';
 
-  const pendingRequests = isHost ? pool.members.filter((m) => m.status === 'pending') : [];
-  const confirmedMembers = pool.members.filter((m) => m.status === 'confirmed');
+  const pendingRequests = isHost ? pool.members.filter((m: PoolMemberInfo) => m.status === 'pending') : [];
+  const confirmedMembers = pool.members.filter((m: PoolMemberInfo) => m.status === 'confirmed');
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -371,12 +371,12 @@ export default function PoolDetailScreen() {
             Riders ({pool.seatsTaken} of {pool.totalSeats})
           </Text>
           <AvatarStack
-            members={confirmedMembers.map((m) => ({ id: m.userId, name: m.name, avatarUrl: m.avatarUrl }))}
+            members={confirmedMembers.map((m: PoolMemberInfo) => ({ id: m.userId, name: m.name, avatarUrl: m.avatarUrl }))}
             size="md"
             style={styles.avatarStack}
           />
 
-          {confirmedMembers.map((m) => (
+          {confirmedMembers.map((m: PoolMemberInfo) => (
             <ListRow
               key={m.userId}
               title={m.name}
@@ -390,7 +390,7 @@ export default function PoolDetailScreen() {
         {isHost && pendingRequests.length > 0 && (
           <Card variant="flat" style={styles.pendingCard}>
             <Text style={styles.sectionHeader}>Pending Join Requests</Text>
-            {pendingRequests.map((req) => (
+            {pendingRequests.map((req: PoolMemberInfo) => (
               <View key={req.userId} style={styles.pendingRow}>
                 <Avatar name={req.name} avatarUrl={req.avatarUrl} size="sm" />
                 <View style={styles.pendingDetails}>
