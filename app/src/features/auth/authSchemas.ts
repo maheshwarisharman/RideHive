@@ -15,6 +15,22 @@ export const emailSchema = z.object({
 
 export type EmailFormData = z.infer<typeof emailSchema>;
 
+export const credentialsSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('Please enter a valid email address.')
+    .refine((val) => val.endsWith(allowedDomain), {
+      message: 'Access restricted: Only @bmu.edu.in student/faculty emails are allowed.',
+    }),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters.'),
+});
+
+export type CredentialsFormData = z.infer<typeof credentialsSchema>;
+
 export const otpSchema = z.object({
   code: z
     .string()

@@ -1,5 +1,6 @@
 import {
   emailSchema,
+  credentialsSchema,
   otpSchema,
   onboardingStepOneSchema,
   onboardingStepTwoSchema,
@@ -66,6 +67,32 @@ describe('authSchemas', () => {
     it('rejects invalid UPI ID formats', () => {
       const result = onboardingStepTwoSchema.safeParse({
         upiId: 'invalid-upi-without-at',
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('credentialsSchema', () => {
+    it('accepts valid bmu email and password >= 6 characters', () => {
+      const result = credentialsSchema.safeParse({
+        email: 'student.22@bmu.edu.in',
+        password: 'password123',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('rejects non-bmu email even with valid password', () => {
+      const result = credentialsSchema.safeParse({
+        email: 'user@gmail.com',
+        password: 'password123',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects passwords shorter than 6 characters', () => {
+      const result = credentialsSchema.safeParse({
+        email: 'student.22@bmu.edu.in',
+        password: '12345',
       });
       expect(result.success).toBe(false);
     });

@@ -8,13 +8,14 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, ShieldCheck } from 'lucide-react-native';
+import { Mail, Lock, ShieldCheck } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, TextField, Toast } from '../../src/components/ui';
-import { emailSchema, EmailFormData } from '../../src/features/auth/authSchemas';
+import { credentialsSchema, CredentialsFormData } from '../../src/features/auth/authSchemas';
 import { authService } from '../../src/features/auth/authService';
+import { useAuthStore } from '../../src/features/auth/authStore';
 import { colors, spacing, typography } from '../../src/theme/tokens';
 
 export default function SignInScreen() {
@@ -26,24 +27,37 @@ export default function SignInScreen() {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<EmailFormData>({
-    resolver: zodResolver(emailSchema),
+  } = useForm<CredentialsFormData>({
+    resolver: zodResolver(credentialsSchema),
     defaultValues: {
       email: '',
+      password: '',
     },
   });
 
-  const onSubmit = async (data: EmailFormData) => {
+  const onSubmit = async (data: CredentialsFormData) => {
     setLoading(true);
     setToastMessage(null);
 
-    const { error } = await authService.sendOtp(data.email);
+    const { error, session } = await authService.signInWithCredentials(
+      data.email,
+      data.password
+    );
     setLoading(false);
 
     if (error) {
-      setToastMessage(error.message || 'Failed to send OTP code. Please try again.');
-    } else {
-      router.push('/(auth)/verify-otp');
+      setToastMessage(error.message || 'Authentication failed. Please verify credentials.');
+      return;
+    }
+
+    if (session) {
+      const profile = useAuthStore.getState().profile;
+      // If user has not onboarded full name, take them to onboarding
+      if (!profile?.fullName || profile.fullName === 'BMU Student') {
+        router.push('/(auth)/onboarding');
+      } else {
+        router.replace('/(tabs)/home');
+      }
     }
   };
 
@@ -56,9 +70,10 @@ export default function SignInScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <Text style={styles.brand}>RideHive</Text>
-            <Text style={styles.title}>Enter university email</Text>
+            <Text style={styles.title}>BMU Student Sign In</Text>
             <Text style={styles.subtitle}>
-              We will send a 6-digit verification code to your official @bmu.edu.in address.
+              Sign in with your official @bmu.edu.in email. If you are new, an account will be
+              created automatically with your password.
             </Text>
           </View>
 
@@ -86,8 +101,26 @@ export default function SignInScreen() {
               )}
             />
 
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextField
+                  label="Password"
+                  placeholder="Minimum 6 characters"
+                  secureTextEntry
+                  autoCapitalize="none"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  error={errors.password?.message}
+                  leadingIcon={<Lock size={18} color={colors.textSecondary} />}
+                />
+              )}
+            />
+
             <Button
-              title="Send verification code"
+              title="Continue to RideHive"
               onPress={handleSubmit(onSubmit)}
               loading={loading}
               style={styles.submitBtn}
@@ -97,7 +130,7 @@ export default function SignInScreen() {
           <View style={styles.trustBanner}>
             <ShieldCheck size={18} color={colors.textSecondary} style={styles.trustIcon} />
             <Text style={styles.trustText}>
-              Campus-only network. Only students and staff with an active @bmu.edu.in email can access RideHive.
+              Verified Campus Community: Only students and faculty with an active @bmu.edu.in email can access RideHive.
             </Text>
           </View>
         </ScrollView>
@@ -115,55 +148,53 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: spacing.xl,
     flexGrow: 1,
-    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing['4xl'],
+    justifyContent: 'space-between',
   },
   header: {
     marginBottom: spacing.xxl,
   },
   brand: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: spacing.xs,
+    ...typography.heading,
+    color: colors.textPrimary,
+    marginBottom: spacing.md,
   },
   title: {
-    ...typography.display,
+    ...typography.title,
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
+    lineHeight: 22,
   },
   toast: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   form: {
-    marginBottom: spacing.xl,
+    flex: 1,
   },
   submitBtn: {
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
   },
   trustBanner: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
+    alignItems: 'center',
+    paddingTop: spacing.xl,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   trustIcon: {
     marginRight: spacing.sm,
-    marginTop: 2,
   },
   trustText: {
-    ...typography.captionRegular,
+    ...typography.caption,
     color: colors.textSecondary,
     flex: 1,
+    lineHeight: 18,
   },
 });

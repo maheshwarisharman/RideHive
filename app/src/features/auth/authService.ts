@@ -3,6 +3,59 @@ import { useAuthStore, ProfileData, PrivateProfileData } from './authStore';
 
 export const authService = {
   /**
+   * Direct email/password authentication (No OTP required)
+   * Signs in if user exists, otherwise registers the user.
+   */
+  async signInWithCredentials(
+    email: string,
+    password: string
+  ): Promise<{ error: Error | null; session: any }> {
+    const cleanEmail = email.trim().toLowerCase();
+    try {
+      // 1. Attempt sign in
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
+
+      if (!signInError && signInData.session) {
+        useAuthStore.getState().setSession(signInData.session);
+        await authService.fetchProfiles(signInData.session.user.id);
+        return { error: null, session: signInData.session };
+      }
+
+      // 2. If invalid credentials or user not found, attempt sign up
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+      });
+
+      if (signUpError) {
+        return { error: signUpError, session: null };
+      }
+
+      if (signUpData.session) {
+        useAuthStore.getState().setSession(signUpData.session);
+        await authService.fetchProfiles(signUpData.session.user.id);
+        return { error: null, session: signUpData.session };
+      }
+
+      if (signUpData.user && !signUpData.session) {
+        return {
+          error: new Error(
+            'Account created! In Supabase Dashboard > Authentication > Providers > Email, turn "Confirm email" OFF to sign in immediately without an email confirmation link.'
+          ),
+          session: null,
+        };
+      }
+
+      return { error: signInError || null, session: null };
+    } catch (err: any) {
+      return { error: err, session: null };
+    }
+  },
+
+  /**
    * Request 6-digit email OTP from Supabase Auth
    */
   async sendOtp(email: string): Promise<{ error: Error | null }> {
