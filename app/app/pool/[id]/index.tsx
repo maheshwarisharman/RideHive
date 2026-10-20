@@ -106,9 +106,43 @@ export default function PoolDetailScreen() {
 
     if (res.success) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setToastMessage(res.message || 'Joined successfully!');
-      setToastType('success');
-      loadPool();
+      await loadPool();
+
+      if (res.status === 'confirmed' || pool.joinMode === 'instant') {
+        Alert.alert(
+          'Joined Pool! 🎉',
+          'Your seat is confirmed! Would you like to say hi in chat or view your rides?',
+          [
+            {
+              text: 'Open Chat',
+              onPress: () => router.push({ pathname: '/pool/[id]/chat', params: { id: pool.id } }),
+            },
+            {
+              text: 'My Rides',
+              onPress: () => router.push('/(tabs)/rides'),
+            },
+            {
+              text: 'Done',
+              style: 'cancel',
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Request Sent! ✉️',
+          'Your request was sent to the host. You will receive a notification once approved.',
+          [
+            {
+              text: 'Back to Home',
+              onPress: () => router.push('/(tabs)/home'),
+            },
+            {
+              text: 'OK',
+              style: 'cancel',
+            },
+          ]
+        );
+      }
     } else {
       setToastMessage(res.error?.message || 'Failed to join pool.');
       setToastType('error');

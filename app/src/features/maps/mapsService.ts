@@ -33,13 +33,14 @@ export const mapsService = {
       if (error || !data) return [];
 
       return data.map((loc: any) => {
-        // Point is PostGIS geography string or coordinates
         let lat = config.campus.latitude;
         let lng = config.campus.longitude;
 
-        if (loc.latitude !== undefined && loc.longitude !== undefined) {
-          lat = loc.latitude;
-          lng = loc.longitude;
+        if (loc.latitude != null && !isNaN(Number(loc.latitude))) {
+          lat = Number(loc.latitude);
+        }
+        if (loc.longitude != null && !isNaN(Number(loc.longitude))) {
+          lng = Number(loc.longitude);
         }
 
         return {

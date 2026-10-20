@@ -85,10 +85,11 @@ export default function SearchModal() {
     setSearched(true);
     setToastMessage(null);
 
-    const windowStart = new Date(departsAt.getTime() - 60 * 60 * 1000);
-    const windowEnd = new Date(departsAt.getTime() + 60 * 60 * 1000);
+    // Search +/- 2 hours around selected departure time
+    const windowStart = new Date(departsAt.getTime() - 2 * 60 * 60 * 1000);
+    const windowEnd = new Date(departsAt.getTime() + 2 * 60 * 60 * 1000);
 
-    const pools = await searchService.searchPools({
+    let pools = await searchService.searchPools({
       originLat: origin.latitude,
       originLng: origin.longitude,
       destLat: destination.latitude,
@@ -99,9 +100,35 @@ export default function SearchModal() {
       userId: user?.id,
     });
 
+    // If no rides in +/- 2h window, check wider upcoming window (next 48h) so users don't miss rides to the same destination
+    if (pools.length === 0) {
+      const wideStart = new Date(Date.now() - 30 * 60 * 1000);
+      const wideEnd = new Date(Date.now() + 48 * 60 * 60 * 1000);
+      const upcomingPools = await searchService.searchPools({
+        originLat: origin.latitude,
+        originLng: origin.longitude,
+        destLat: destination.latitude,
+        destLng: destination.longitude,
+        windowStart: wideStart,
+        windowEnd: wideEnd,
+        seatsNeeded,
+        userId: user?.id,
+      });
+      if (upcomingPools.length > 0) {
+        pools = upcomingPools;
+      }
+    }
+
     setResults(pools);
     setLoading(false);
   };
+
+  // Auto-search if opened with pre-filled destination params
+  useEffect(() => {
+    if (destination) {
+      executeSearch();
+    }
+  }, []);
 
   const handleCreateAlert = async () => {
     if (!user || !destination) {

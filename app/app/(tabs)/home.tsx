@@ -39,7 +39,7 @@ export default function HomeScreen() {
       const ride = await searchService.fetchNextRide(user.id);
       setNextRide(ride);
     }
-    const soonPools = await searchService.fetchLeavingSoonPools(4);
+    const soonPools = await searchService.fetchLeavingSoonPools(4, user?.id);
     setLeavingSoon(soonPools);
     setLoading(false);
   }, [user?.id]);

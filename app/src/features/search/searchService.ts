@@ -49,25 +49,30 @@ export const searchService = {
         p_user_id: params.userId || null,
       });
 
-      if (error || !data) return [];
-      return data as PoolSearchResult[];
-    } catch {
+      if (error) {
+        console.error('search_pools RPC error:', error);
+        return [];
+      }
+      return (data || []) as PoolSearchResult[];
+    } catch (err) {
+      console.error('searchPools catch error:', err);
       return [];
     }
   },
 
   /**
-   * Fetch pools departing soon (next 6 hours) from campus
+   * Fetch upcoming open pools departing soonest from campus, excluding user's own pools
    */
-  async fetchLeavingSoonPools(limit: number = 5): Promise<any[]> {
+  async fetchLeavingSoonPools(limit: number = 5, excludeUserId?: string | null): Promise<any[]> {
     try {
-      const now = new Date().toISOString();
-      const sixHoursLater = new Date(Date.now() + 6 * 3600 * 1000).toISOString();
+      // 30 minute grace buffer into past for rides leaving right around now
+      const bufferTime = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('pools')
         .select(`
           id,
+          host_id,
           origin_name,
           destination_name,
           departs_at,
@@ -80,27 +85,39 @@ export const searchService = {
           host:profiles!pools_host_id_fkey(full_name, avatar_url, rating_avg)
         `)
         .eq('status', 'open')
-        .gte('departs_at', now)
-        .lte('departs_at', sixHoursLater)
+        .gte('departs_at', bufferTime);
+
+      if (excludeUserId) {
+        query = query.neq('host_id', excludeUserId);
+      }
+
+      const { data, error } = await query
         .order('departs_at', { ascending: true })
         .limit(limit);
 
-      if (error || !data) return [];
-      return data;
-    } catch {
+      if (error) {
+        console.error('fetchLeavingSoonPools error:', error);
+        return [];
+      }
+      return data || [];
+    } catch (err) {
+      console.error('fetchLeavingSoonPools catch error:', err);
       return [];
     }
   },
 
   /**
-   * Fetch user's next upcoming ride
+   * Fetch user's next upcoming ride (earliest departure)
    */
   async fetchNextRide(userId: string): Promise<any | null> {
     try {
+      const nowBuffer = new Date(Date.now() - 2 * 3600 * 1000).toISOString();
+
       const { data, error } = await (supabase.from('pool_members') as any)
         .select(`
           role,
           status,
+          joined_at,
           pool:pools(
             id,
             origin_name,
@@ -116,22 +133,28 @@ export const searchService = {
           )
         `)
         .eq('user_id', userId)
-        .eq('status', 'confirmed')
-        .order('joined_at', { ascending: false })
-        .limit(1)
-        .single();
+        .eq('status', 'confirmed');
 
-      if (error || !data || !(data as any).pool) return null;
-      const pool = (data as any).pool as any;
-
-      if (['open', 'closed', 'booked'].includes(pool.status)) {
-        return {
-          ...pool,
-          myRole: (data as any).role,
-        };
+      if (error || !data) {
+        if (error) console.error('fetchNextRide error:', error);
+        return null;
       }
-      return null;
-    } catch {
+
+      // Filter active pools and find the earliest upcoming one
+      const activeRides = (data as any[])
+        .filter((row) => {
+          const pool = row.pool;
+          return pool && ['open', 'closed', 'booked'].includes(pool.status) && pool.departs_at >= nowBuffer;
+        })
+        .map((row) => ({
+          ...row.pool,
+          myRole: row.role,
+        }))
+        .sort((a, b) => new Date(a.departs_at).getTime() - new Date(b.departs_at).getTime());
+
+      return activeRides[0] || null;
+    } catch (err) {
+      console.error('fetchNextRide catch error:', err);
       return null;
     }
   },
