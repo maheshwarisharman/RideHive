@@ -49,6 +49,8 @@ import {
 import { useAuthStore } from '../../../src/features/auth/authStore';
 import { formatPaise, formatRideTime } from '../../../src/lib/formatters';
 import { colors, radii, spacing, typography } from '../../../src/theme/tokens';
+import { RatingModal } from '../../../src/features/safety/RatingModal';
+import { ReportModal } from '../../../src/features/safety/ReportModal';
 
 export default function PoolDetailScreen() {
   const router = useRouter();
@@ -67,6 +69,10 @@ export default function PoolDetailScreen() {
   const [provider, setProvider] = useState<string>('uber');
   const [vehicleNumber, setVehicleNumber] = useState<string>('');
   const [cabNote, setCabNote] = useState<string>('');
+
+  // Safety modals state
+  const [ratingTarget, setRatingTarget] = useState<{ userId: string; name: string } | null>(null);
+  const [reportTarget, setReportTarget] = useState<{ userId: string; name: string } | null>(null);
 
   const loadPool = useCallback(async () => {
     if (!id) return;
@@ -376,14 +382,37 @@ export default function PoolDetailScreen() {
             style={styles.avatarStack}
           />
 
-          {confirmedMembers.map((m: PoolMemberInfo) => (
-            <ListRow
-              key={m.userId}
-              title={m.name}
-              subtitle={m.role === 'host' ? 'Host' : 'Confirmed rider'}
-              leading={<Avatar name={m.name} avatarUrl={m.avatarUrl} size="sm" />}
-            />
-          ))}
+          {confirmedMembers.map((m: PoolMemberInfo) => {
+            const isMe = m.userId === user?.id;
+            return (
+              <ListRow
+                key={m.userId}
+                title={m.name + (isMe ? ' (You)' : '')}
+                subtitle={m.role === 'host' ? 'Host' : 'Confirmed rider'}
+                leading={<Avatar name={m.name} avatarUrl={m.avatarUrl} size="sm" />}
+                trailing={
+                  !isMe ? (
+                    <View style={styles.memberActionRow}>
+                      {isCompleted && (
+                        <TouchableOpacity
+                          style={styles.memberActionBtn}
+                          onPress={() => setRatingTarget({ userId: m.userId, name: m.name })}
+                        >
+                          <Text style={styles.memberActionText}>Rate</Text>
+                        </TouchableOpacity>
+                      )}
+                      <TouchableOpacity
+                        style={[styles.memberActionBtn, { marginLeft: spacing.xs }]}
+                        onPress={() => setReportTarget({ userId: m.userId, name: m.name })}
+                      >
+                        <Text style={[styles.memberActionText, { color: colors.textSecondary }]}>Report</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : undefined
+                }
+              />
+            );
+          })}
         </Card>
 
         {/* Pending Approval Requests (Host view) */}
@@ -582,6 +611,34 @@ export default function PoolDetailScreen() {
           </View>
         </View>
       </Modal>
+      {/* Rating Modal */}
+      {ratingTarget && pool && (
+        <RatingModal
+          visible={Boolean(ratingTarget)}
+          onClose={() => setRatingTarget(null)}
+          poolId={pool.id}
+          toUserId={ratingTarget.userId}
+          targetName={ratingTarget.name}
+          onSuccess={() => {
+            setToastMessage('Rating submitted!');
+            loadPool();
+          }}
+        />
+      )}
+
+      {/* Report Modal */}
+      {reportTarget && pool && (
+        <ReportModal
+          visible={Boolean(reportTarget)}
+          onClose={() => setReportTarget(null)}
+          reportedUserId={reportTarget.userId}
+          targetName={reportTarget.name}
+          poolId={pool.id}
+          onSuccess={() => {
+            setToastMessage('Report submitted.');
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -851,5 +908,22 @@ const styles = StyleSheet.create({
   modalBtn: {
     flex: 1,
     marginHorizontal: spacing.xs,
+  },
+  memberActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  memberActionBtn: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.sm,
+  },
+  memberActionText: {
+    ...typography.caption,
+    color: colors.textPrimary,
+    fontWeight: '500',
   },
 });
