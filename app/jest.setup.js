@@ -63,5 +63,10 @@ jest.mock('@supabase/supabase-js', () => ({
       invoke: jest.fn().mockResolvedValue({ data: null, error: null }),
     },
     rpc: jest.fn().mockResolvedValue({ data: null, error: null }),
+    channel: jest.fn(() => ({
+      on: jest.fn().mockReturnThis(),
+      subscribe: jest.fn().mockReturnThis(),
+    })),
+    removeChannel: jest.fn(),
   })),
 }));
